@@ -7,8 +7,8 @@ clearvars; close all;
 
 main_dir = MUSim_main_dir();
 
-n_exp  = 2.5e2;
-n_perm = 2.5e2;
+n_exp  = 10;
+n_perm = 1e2;
 save_results = false;
 
 effect = fullfile(main_dir, 'data', 'NonCon_N400_restricted.mat');

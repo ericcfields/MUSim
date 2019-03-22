@@ -1,9 +1,10 @@
-function run_real_erp_sim(effect, time_wind, electrodes, mult_comp_method, n_exp, n_perm, save_results)
 %Function to test Type I and Type II error rates for mass univariate approaches
 %with data constructed from real EEG noise trials and real ERP effects
 %
-%Eric Fields
-%version date: 22 March 2019
+%Author: Eric Fields
+%Version Date: 22 March 2019
+
+function run_real_erp_sim(effect, time_wind, electrodes, mult_comp_method, n_exp, n_perm, save_results)
 
     
     %% ####################################################################
@@ -220,7 +221,7 @@ function run_real_erp_sim(effect, time_wind, electrodes, mult_comp_method, n_exp
     time_stamp = sprintf('%s_%s', datestr(datetime('now'),'ddmmmyy'), datestr(datetime('now'),'HHMM'));
     if save_results
         %save(sprintf('R:\\Public\\GK_lab\\Eric\\Stats Simulations\\erps\\RealERP_simulation_%s.mat', time_stamp), '-v7.3'); 
-        diary('R:\Public\GK_lab\Eric\Stats Simulations\\erps\\RealERP_simulation_results.txt');
+        diary(fullfile(main_dir, 'results', 'MUSim_results.txt'));
     end
     
     if ~effect

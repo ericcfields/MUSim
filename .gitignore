@@ -8,5 +8,6 @@
 
 ### Folders to completely ignore ###
 data/*
+results/*
 
 ### File subsets in folder to ignore ###
