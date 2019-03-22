@@ -1,3 +1,12 @@
+%Return main directory for MUSim
+%
+%Author: Eric Fields
+%Version Date: 22 March 2019
+
 function main_dir = MUSim_main_dir()
-    main_dir = 'C:\Users\ecfne\Documents\Eric\Research\Stats Simulations\MUSim';
+	if isunix()
+		main_dir = 'C:\Users\ecfne\Documents\Eric\Research\Stats Simulations\MUSim';
+	else
+		main_dir = '/gsfs0/data/fields/MUSim';
+	end
 end
