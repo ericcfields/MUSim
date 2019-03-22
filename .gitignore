@@ -5,6 +5,7 @@
 *.lnk
 *.asv
 *.mat
+*.docx
 
 ### Folders to completely ignore ###
 data/*
