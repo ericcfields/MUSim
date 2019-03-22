@@ -1,0 +1,12 @@
+#Files to ignore for MUSim git repository
+
+### File types to completely ignore ###
+*.ffs_db
+*.lnk
+*.asv
+*.mat
+
+### Folders to completely ignore ###
+data/*
+
+### File subsets in folder to ignore ###
