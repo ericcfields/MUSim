@@ -1,5 +1,5 @@
 #!/bin/tcsh
-#PBS -l mem=16gb,nodes=1:ppn=8,walltime=2:00:00
+#PBS -l pmem=4gb,nodes=1:ppn=8,walltime=0:10:00
 #PBS -m abe -M eric.fields@bc.edu
 
 module load matlab

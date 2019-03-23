@@ -4,7 +4,7 @@
 %Author: Eric Fields
 %Version Date: 22 March 2019
 
-function run_real_erp_sim(effect, time_wind, electrodes, mult_comp_method, n_exp, n_perm, save_results)
+function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, mult_comp_method, n_exp, n_perm, save_results)
 
     
     %% ####################################################################
@@ -28,6 +28,9 @@ function run_real_erp_sim(effect, time_wind, electrodes, mult_comp_method, n_exp
     %Load effect data
     if effect
         load(effect);
+        if ~isequal(factor_levels, size(effects_data, 3)) %#ok<NODEF>
+            error('factor_levels input doesn''t match effects data');
+        end
     end
     
     %Save results?
@@ -46,7 +49,6 @@ function run_real_erp_sim(effect, time_wind, electrodes, mult_comp_method, n_exp
     %Simulated data characteristics
     n_subs = 24;
     n_time_pts = length(GND.time_pts); %#ok<NODEF>
-    factor_levels = size(effects_data, 3); %#ok<NODEF>
     bins = 1:prod(factor_levels);
     error_mult  = ones(length(bins), 1) * 3;
     cond_trials = ones(length(bins), 1) * 20;

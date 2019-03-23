@@ -6,9 +6,11 @@
 *.asv
 *.mat
 *.docx
+*.ffs_lock
 
 ### Folders to completely ignore ###
 data/*
 results/*
+torque_output/*
 
 ### File subsets in folder to ignore ###
