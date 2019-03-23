@@ -150,7 +150,7 @@ function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, mult_com
     %% ~~~~~ SIMULATE EXPERIMENTS ~~~~~
     tic
     %Conduct n_exp simulated experiments
-    for i = 1:n_exp
+    parfor i = 1:n_exp
         
         %% ~~~~~ GENERATE SIMULATED DATA ~~~~~
         

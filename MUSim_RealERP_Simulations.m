@@ -7,13 +7,14 @@ clearvars; close all;
 
 main_dir = MUSim_main_dir();
 
+%Add EEGLAB, MUT, and FMUT to path if on cluster
 if isunix()
     addpath('/gsfs0/data/fields/Documents/MATLAB/eeglab14_1_1b_ECF'); %NEED TO CHANGE
     addpath('/gsfs0/data/fields/Documents/MATLAB/FMUT_0.3.5');
     addpath('/gsfs0/data/fields/Documents/MATLAB/dmgroppe-Mass_Univariate_ERP_Toolbox-10dc5c7');
 end
 
-n_exp  = 1e3;
+n_exp  = 5e3;
 n_perm = 1e3;
 save_results = false;
 
