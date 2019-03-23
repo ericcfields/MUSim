@@ -15,7 +15,7 @@ if isunix()
 end
 
 n_exp  = 5e3;
-n_perm = 1e3;
+n_perm = 5e3;
 save_results = false;
 
 effect = fullfile(main_dir, 'data', 'NonCon_N400_restricted.mat');
