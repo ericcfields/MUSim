@@ -20,9 +20,9 @@ save_results = false;
 
 effect = fullfile(main_dir, 'data', 'NonCon_N400_restricted.mat');
 factor_levels = 2;
-time_wind = [300, 500];
-electrodes = [10, 14, 21, 22, 23];
-mult_comp_method = 'Fmax';
+time_wind = [0, 1000]; %[300, 500];
+electrodes = 1:32; %[10, 14, 21, 22, 23];
+mult_comp_method = 'clust';
 
 diary(fullfile(main_dir, 'results', 'MUSim_sirius_test.txt'));
 tic;

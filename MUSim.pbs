@@ -1,7 +1,7 @@
 #!/bin/tcsh
-#PBS -l pmem=4gb,nodes=1:ppn=8,walltime=0:30:00
+#PBS -l pmem=4gb,nodes=1:ppn=8,walltime=16:00:00
 #PBS -m abe -M eric.fields@bc.edu
 
 module load matlab
 cd /gsfs0/data/fields/MUSim
-matlab -nodisplay -nosplash -nodesktop -r "run('MUSim_RealERP_Simulations.m'); exit;"
+matlab -nodisplay -nosplash -nodesktop -r "parpool(8); run('MUSim_RealERP_Simulations.m'); exit;"
