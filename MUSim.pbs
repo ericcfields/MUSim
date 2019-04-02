@@ -2,6 +2,6 @@
 #PBS -l pmem=4gb,nodes=1:ppn=24,walltime=16:00:00
 #PBS -m abe -M eric.fields@bc.edu
 
-module load matlab
+module load matlab/2018a
 cd /gsfs0/data/fields/MUSim
 matlab -nodisplay -nosplash -nodesktop -r "parpool(24); run('MUSim_RealERP_Simulations.m'); exit;"
