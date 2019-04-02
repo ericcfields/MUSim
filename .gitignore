@@ -7,6 +7,12 @@
 *.mat
 *.docx
 *.ffs_lock
+*.exe
+*.dll
+*.DS_Store
+*.mat
+*.GND
+*.GRP
 
 ### Folders to completely ignore ###
 data/*
