@@ -2,7 +2,7 @@
 %with data constructed from real EEG noise trials and real ERP effects
 %
 %Author: Eric Fields
-%Version Date: 22 March 2019
+%Version Date: 3 April 2019
 
 function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, mult_comp_method, n_exp, n_perm, save_results)
 
@@ -55,14 +55,9 @@ function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, mult_com
     sub_param = [1 0.1];
     
     %Parameters for permutation ANOVA
-    if strcmpi(mult_comp_method, 'clust')
-        chan_hood = 75;
-        chan_hood = spatial_neighbors(GND.chanlocs(electrodes), chan_hood, []);
-        thresh_p = 0.05;
-    else
-        chan_hood = NaN;
-        thresh_p  = NaN;
-    end
+    chan_hood = 75;
+    chan_hood = spatial_neighbors(GND.chanlocs(electrodes), chan_hood, []);
+    thresh_p = 0.05;
     
     %Parameters for parametric ANOVA
     param_time_wind  = time_wind;
@@ -79,8 +74,7 @@ function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, mult_com
 
     %% ~~~~~ MAKE NEW GND ~~~~~
     
-    %Make new "blank" GND: dimensions and characteristics match parameters 
-    %above and all data changed to NaN
+    %Update to match simulation parameters
     GND.grands = NaN(n_electrodes, n_time_pts, n_conds);
     GND.grands_stder = NaN(n_electrodes, n_time_pts, n_conds);
     GND.grands_t = NaN(n_electrodes, n_time_pts, n_conds);
@@ -113,26 +107,23 @@ function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, mult_com
     param_uncorr_int_nht = NaN(n_exp, n_electrodes, n_sample_time_pts);
     param_ANOVA_nht      = NaN(1, n_exp);
     GND = repmat(GND, 1, n_exp);
-    switch mult_comp_method
-        case 'clust'
-            results = repmat(struct('h', NaN(n_electrodes, n_sample_time_pts), 'p', NaN(n_electrodes, n_sample_time_pts), ... 
+    results = struct;
+    results.clust05 = repmat(struct('h', NaN(n_electrodes, n_sample_time_pts), 'p', NaN(n_electrodes, n_sample_time_pts), ... 
                              'F_obs', NaN(n_electrodes, n_sample_time_pts),'df', NaN(1, length(factor_levels)), ... 
-                             'clust_info', struct('null_test', [], 'pval', [], 'clust_mass', [], 'clust_ids', []), ...
-                             'estimated_alpha', NaN, 'exact_test', NaN), ...
-                             1, n_exp);
-        case 'Fmax'
-            results = repmat(struct('h', NaN(n_electrodes, n_sample_time_pts), 'p', NaN(n_electrodes, n_sample_time_pts), ... 
-                             'F_obs', NaN(n_electrodes, n_sample_time_pts),'Fmax_crit', NaN, 'df', NaN(1, length(factor_levels)), ...
-                             'estimated_alpha', NaN, 'exact_test', NaN), ...
-                             1, n_exp);
-        otherwise
-            if any(strcmpi(mult_comp_method, {'bh', 'by', 'bky'}))
-                results = repmat(struct('h', NaN(n_electrodes, n_time_pts), 'p', NaN(n_electrodes, n_time_pts), ... 
-                                     'F_obs', NaN(n_electrodes, n_time_pts), 'F_crit', NaN, 'df', NaN(1, 2)), ...
-                                     1, n_exp);
-            end
-    end
-    
+                              'clust_info', struct('null_test', [], 'pval', [], 'clust_mass', [], 'clust_ids', []), ...
+                              'estimated_alpha', NaN, 'exact_test', NaN), ...
+                              1, n_exp);
+    results.clust01 = results.clust05;
+    results.Fmax = repmat(struct('h', NaN(n_electrodes, n_sample_time_pts), 'p', NaN(n_electrodes, n_sample_time_pts), ... 
+                          'F_obs', NaN(n_electrodes, n_sample_time_pts),'Fmax_crit', NaN, 'df', NaN(1, length(factor_levels)), ...
+                          'estimated_alpha', NaN, 'exact_test', NaN), ...
+                          1, n_exp);
+    results.bh = repmat(struct('h', NaN(n_electrodes, n_time_pts), 'p', NaN(n_electrodes, n_time_pts), ... 
+                        'F_obs', NaN(n_electrodes, n_time_pts), 'F_crit', NaN, 'df', NaN(1, 2)), ...
+                        1, n_exp);
+    results.by  = results.bh;
+    results.bky = results.bh;
+
     %Randomly select subjects to use in each experiment below
     sub_sample = NaN(n_exp, n_subs);
     for i = 1:n_exp
@@ -150,7 +141,7 @@ function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, mult_com
     %% ~~~~~ SIMULATE EXPERIMENTS ~~~~~
     tic
     %Conduct n_exp simulated experiments
-    parfor i = 1:n_exp
+    for i = 1:n_exp
         
         %% ~~~~~ GENERATE SIMULATED DATA ~~~~~
         
@@ -180,18 +171,12 @@ function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, mult_com
         %ANOVA
         data = GND(i).indiv_erps(:, start_sample:end_sample, bins, :);
         data = reshape(data,[n_electrodes, n_sample_time_pts, factor_levels, n_subs]);
-        switch mult_comp_method
-            case 'Fmax'
-                results(i) = calc_Fmax(data, [], (1:length(factor_levels > 1))+2, n_perm, 0.05); %#ok<PFOUS>
-            case 'clust'
-                results(i) = calc_Fclust(data, [], (1:length(factor_levels > 1))+2, n_perm, 0.05, chan_hood, thresh_p);
-            case 'bh'
-                results(i) = calc_param_ANOVA(data, [], (1:length(factor_levels > 1))+2, 0.05, 'bh');
-            case 'by'
-                results(i) = calc_param_ANOVA(data, [], (1:length(factor_levels > 1))+2, 0.05, 'by');
-            case 'bky'
-                results(i) = calc_param_ANOVA(data, [], (1:length(factor_levels > 1))+2, 0.05, 'bky');
-        end
+        results(i).Fmax    = calc_Fmax(data, [], (1:length(factor_levels > 1))+2, n_perm, 0.05); %#ok<PFOUS>
+        results(i).clust05 = calc_Fclust(data, [], (1:length(factor_levels > 1))+2, n_perm, 0.05, chan_hood, thresh_p);
+        results(i).clust01 = calc_Fclust(data, [], (1:length(factor_levels > 1))+2, n_perm, 0.01, chan_hood, thresh_p);
+        results(i).bh      = calc_param_ANOVA(data, [], (1:length(factor_levels > 1))+2, 0.05, 'bh');
+        results(i).by      = calc_param_ANOVA(data, [], (1:length(factor_levels > 1))+2, 0.05, 'by');
+        results(i).bky     = calc_param_ANOVA(data, [], (1:length(factor_levels > 1))+2, 0.05, 'bky');
         
         %Parametric ANOVA
         if isequal(electrodes, 1:32)
@@ -207,9 +192,9 @@ function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, mult_com
         param_ANOVA_nht(i) = param_results.h;
                              
         %Store hypothesis test results
-        F_int_nht(i, :, :)            = results(i).h;
-        sidak_int_nht(i, :, :)        = results(i).F_obs > finv(.95^(1/(n_electrodes * n_sample_time_pts)), prod(factor_levels-1), prod(factor_levels-1) * (n_subs - 1));
-        param_uncorr_int_nht(i, :, :) = results(i).F_obs > finv(.95,                                        prod(factor_levels-1), prod(factor_levels-1) * (n_subs - 1));
+        F_int_nht(i, :, :)            = results(i).(mult_comp_method).h;
+        sidak_int_nht(i, :, :)        = results(i).(mult_comp_method).F_obs > finv(.95^(1/(n_electrodes * n_sample_time_pts)), prod(factor_levels-1), prod(factor_levels-1) * (n_subs - 1));
+        param_uncorr_int_nht(i, :, :) = results(i).(mult_comp_method).F_obs > finv(.95,                                        prod(factor_levels-1), prod(factor_levels-1) * (n_subs - 1));
 
     end
     toc
