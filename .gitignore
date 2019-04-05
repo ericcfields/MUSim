@@ -13,6 +13,8 @@
 *.mat
 *.GND
 *.GRP
+*.pbs.o*
+*.pbs.e*
 
 ### Folders to completely ignore ###
 data/*

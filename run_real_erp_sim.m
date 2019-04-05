@@ -227,10 +227,25 @@ end
 
 function summarize_results(effect_loc, nht)
 
-nht_effect = nht(:, :, effect_loc);
+    %Get simulated experiments that found a significant result
+    sig_studies = any(any(nht, 2), 3);
+    
+    %Get null hypothesis test at locations with and without real effect
+    %separately
+    nht_effect = nht(:, :, effect_loc);
     nht_null   = nht(:, :, ~effect_loc);
-    fprintf('Rejection rate at individual time points with effect (element-wise power) = %.3f\n', mean(mean(any(nht_effect, 2))));
-    fprintf('Rejection rate at individual time points with null effect (element-wise Type I error) = %.3f\n', mean(mean(any(nht_null, 2))));
-    fprintf('Family-wise rejection rate across time points with effect (familywise power) = %.3f\n', mean(any(any(nht_effect, 2), 3)));
-    fprintf('Family-wise rejection rate across time points with null effect (familywise Type I error) = %.3f\n', mean(any(any(nht_null, 2), 3)));
+    
+    %Report family-wiise rejection rate
+    fprintf('-- Family-wise rejection rates --\n');
+    fprintf('Family-wise rejection rate across time points with effect (familywise power) = %.3f\n',                 mean(any(any(nht_effect, 2), 3)));
+    fprintf('Family-wise rejection rate across time points with null effect (familywise Type I error) = %.3f\n',     mean(any(any(nht_null, 2), 3)));
+    
+    %Report element-wise rejection rate within studies with significant
+    %results
+    fprintf('-- Element-wise rejection rates --\n');
+    fprintf('Mean rejection rate at individual time points with effect (element-wise power) = %.3f\n',               mean(mean(any(nht_effect(sig_studies, :, :), 2))));
+    fprintf('Median rejection rate at individual time points with effect (element-wise power) = %.3f\n',             median(mean(any(nht_effect(sig_studies, :, :), 2), 3)));
+    fprintf('Mean rejection rate at individual time points with null effect (element-wise Type I error) = %.3f\n',   mean(mean(any(nht_null(sig_studies, :, :), 2))));
+    fprintf('Median rejection rate at individual time points with null effect (element-wise Type I error) = %.3f\n', median(mean(any(nht_null(sig_studies, :, :), 2), 3)));
+    
 end

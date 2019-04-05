@@ -40,7 +40,7 @@ electrodes = [10, 14, 21, 22, 23];
 alpha = 0.05;
 
 %File for saving results
-output_file = false; %fullfile(main_dir, 'results', 'MUSim_results.txt');
+output_file = false; %sfullfile(main_dir, 'results', 'MUSim_results.txt');
 
 
 %% RUN SIMULATION
