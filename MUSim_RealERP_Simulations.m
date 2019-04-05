@@ -22,28 +22,27 @@ end
 noise = fullfile(main_dir, 'data', 'noise_trials.mat');
 
 %Simulated data parameters
-n_exp  = 1e3;
-n_perm = 1e3;
-n_trials = 20;
+n_exp  = 5e3;
+n_perm = 5e3;
 n_subs = 24;
 cond_trials = 20;
 error_mult = 1;
 ind_var_factor = 0.1;
 
-%Effect to simulate (.mat file with effect or 'null')
-effect = fullfile(main_dir, 'data', 'NonCon_N400_reduced.mat');
-factor_levels = 2;
-
 %Analysis parameters
-time_wind = [300 500];
-electrodes = [10, 14, 21, 22, 23];
+sim_list = readtable(fullfile(main_dir, 'MUSim_simulation_parameters.csv'));
 alpha = 0.05;
 
 %File for saving results
-output_file = false; %sfullfile(main_dir, 'results', 'MUSim_results.txt');
+output_file = fullfile(main_dir, 'results', 'MUSim_results.txt');
 
-
-%% RUN SIMULATION
-
-run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, output_file);
-
+for s = 1:size(sim_list, 1)
+    
+    effect = fullfile(main_dir, 'data', sim_list{s, 'effect'}{1});
+    factor_levels = sim_list{s, 'factor_levels'};
+    time_wind = [sim_list{s, 'start_time'}, sim_list{s, 'end_time'}];
+    electrodes = eval(['[' sim_list{s, 'electrodes'}{1} ']']);
+    
+    run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, output_file);
+    
+end
