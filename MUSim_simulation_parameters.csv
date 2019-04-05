@@ -1,0 +1,10 @@
+effect,start_time,end_time,electrodes
+NonCon_N400_reduced,300,500,"10, 14, 21, 22, 23"
+NonCon_N400_reduced,200,600,1:32
+NonCon_N400_reduced,0,1000,1:32
+namesP300_reduced,500,750,"10, 14, 21, 22, 23"
+namesP300_reduced,400,900,1:32
+namesP300_reduced,0,1000,1:32
+simulated_focal_effect,100,150,"10, 14, 21, 22, 23"
+simulated_focal_effect,0,300,1:32
+simulated_focal_effect,0,1000,1:32
