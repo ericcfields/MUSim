@@ -1,7 +1,7 @@
 %Run stats simulations with real EEG noise trials and effects
 %
 %Author: Eric Fields
-%Version Date: 2 April 2019
+%Version Date: 5 April 2019
 
 clearvars; close all;
 
@@ -15,12 +15,13 @@ end
 n_exp  = 1e3;
 n_perm = 1e3;
 n_trials = 20;
+n_subs = 24;
 alpha = 0.05;
 save_results = true;
 
-effect = 'null'; %fullfile(main_dir, 'data', 'namesP300_reduced.mat');
+effect = fullfile(main_dir, 'data', 'namesP300_reduced.mat');
 factor_levels = 3;
 time_wind = [500 750];
 electrodes = [10, 14, 21, 22, 23];
 
-run_real_erp_sim(effect, time_wind, electrodes, factor_levels, n_exp, n_perm, n_trials, alpha, save_results);
+run_real_erp_sim(effect, time_wind, electrodes, factor_levels, n_exp, n_perm, n_subs, n_trials, alpha, save_results);
