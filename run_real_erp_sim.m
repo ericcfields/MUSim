@@ -1,10 +1,10 @@
-%Function to test Type I and Type II error rates for mass univariate approaches
+%Test Type I and Type II error rates for mass univariate approaches
 %with data constructed from real EEG noise trials and real ERP effects
 %
 %Author: Eric Fields
 %Version Date: 5 April 2019
 
-function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, n_exp, n_perm, n_subs, n_trials, alpha, save_results)
+function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, output_file)
 
     
     %% ####################################################################
@@ -15,42 +15,43 @@ function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, n_exp, n
     global VERBLEVEL
     VERBLEVEL = 0;
     
-    %Get main project directory
-    main_dir = MUSim_main_dir();
-    
     %Add EEGLAB, MUT, and FMUT functions to path
     [ALLEEG, EEG, CURRENTSET, ALLCOM] = eeglab; %#ok<ASGLU>
     close all;
     
     %Load EEG noise trials
-    load(fullfile(main_dir, 'data', 'noise_trials.mat'), 'noise_trials');
-    noise_trials = noise_trials;
+    load(noise, 'noise_trials');
+    noise_trials = noise_trials; %#ok<ASGSL>
     
     %Load effect data
-    if exist(effect, 'file') && ~strcmpi(effect, 'null')
+    if ~strcmpi(effect, 'null')
         load(effect, 'effects_data', 'effect_description');
         if ~isequal(factor_levels, size(effects_data, 3))
             error('factor_levels input doesn''t match effects data');
         end
-    else
-        effect = false;
-    end
-    %Get subset of effects data based on simulation parameters
-    if effect
         effects_data = effects_data(electrodes, :, :);
-    else
-        effects_data = [];
+    end
+
+    %Some key numbers
+    n_conds      = prod(factor_levels);
+    n_time_pts   = length(noise_trials.times);
+    n_electrodes = length(electrodes);
+    
+    %Multiplier applied to standard deviation of each bin
+    if isscalar(error_mult)
+        error_mult  = ones(n_conds, 1) * error_mult; 
+    elseif length(error_mult) ~= prod(factor_levels)
+        error('error_mult input must be a scalar or length must match the number of conditions');
     end
     
-    %Simulated data characteristics
-    bins = 1:prod(factor_levels);
-    error_mult  = ones(length(bins), 1); %Multiplier applied to standard deviation of each bin
-    cond_trials = ones(length(bins), 1) * n_trials; %Number of trials in each bin
-    ind_var_factor = 0.1; %SD of normal distribuiton for individual difference multiplier
-    n_time_pts = length(noise_trials.times);
-    n_electrodes = length(electrodes);
-    n_conds      = length(bins);
-    n_trials     = sum(cond_trials);
+    %Number of trials in each condition
+    if isscalar(cond_trials)
+        cond_trials = ones(n_conds, 1) * cond_trials; %Number of trials in each bin
+    elseif length(cond_trials) ~= prod(factor_levels)
+        error('n_trials input must be a scalar or length must match the number of conditions');
+    end
+    %total number of trials
+    n_trials = sum(cond_trials);
     
     %Channel neighbor information for cluster tests
     chan_hood = 75;
@@ -62,18 +63,18 @@ function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, n_exp, n
     n_sample_time_pts = end_sample - start_sample + 1;
     
     %Pre-allocate output variables
-    h_uncorr  = NaN(n_exp, n_electrodes, n_sample_time_pts);
-    h_Fmax    = NaN(n_exp, n_electrodes, n_sample_time_pts);
-    h_clust05 = NaN(n_exp, n_electrodes, n_sample_time_pts);
-    h_clust01 = NaN(n_exp, n_electrodes, n_sample_time_pts);
-    h_bh      = NaN(n_exp, n_electrodes, n_sample_time_pts);
-    h_by      = NaN(n_exp, n_electrodes, n_sample_time_pts);
-    h_bky     = NaN(n_exp, n_electrodes, n_sample_time_pts);
+    h_uncorrected  = NaN(n_exp, n_electrodes, n_sample_time_pts);
+    h_sidak        = NaN(n_exp, n_electrodes, n_sample_time_pts); %#ok<NASGU>
+    h_Fmax         = NaN(n_exp, n_electrodes, n_sample_time_pts);
+    h_clust05      = NaN(n_exp, n_electrodes, n_sample_time_pts);
+    h_clust01      = NaN(n_exp, n_electrodes, n_sample_time_pts);
+    h_bh           = NaN(n_exp, n_electrodes, n_sample_time_pts);
+    h_by           = NaN(n_exp, n_electrodes, n_sample_time_pts);
+    h_bky          = NaN(n_exp, n_electrodes, n_sample_time_pts);
     h_mean_amp = NaN(n_exp, 1);
-    p_uncorr  = NaN(n_exp, n_electrodes, n_sample_time_pts);
+    p_uncorrected = NaN(n_exp, n_electrodes, n_sample_time_pts);
     
     
-
     %% ####################################################################
     %#################### SIMULTATIONS ####################################
     %######################################################################
@@ -95,7 +96,7 @@ function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, n_exp, n
         end
         
         %Add effects if any
-        if effect
+        if ~strcmpi(effect, 'null')
             %Generate subject effects for this experiment
             sub_effects = normrnd(1, ind_var_factor, n_subs, n_conds);
             for s = 1:n_subs
@@ -108,7 +109,7 @@ function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, n_exp, n
         % ~~~~~~~~~~~~~~~~~~~~~~~ RUN STATS ~~~~~~~~~~~~~~~~~~~~~~~
         
         %Get analysis data
-        data = sim_data(:, start_sample:end_sample, bins, :);
+        data = sim_data(:, start_sample:end_sample, :, :);
         data = reshape(data,[n_electrodes, n_sample_time_pts, factor_levels, n_subs]);
         
         %Run ANOVA
@@ -124,11 +125,11 @@ function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, n_exp, n
         h_clust01(i, :, :) = Fclust_corr(F_obs, F_dist, alpha, chan_hood, thresh_F);
         
         %FDR
-        p_uncorr(i, :, :) = 1 - fcdf(F_obs, df_effect, df_res);
-        h_uncorr(i, :, :) = p_uncorr(i, :, :) <= alpha;
-        h_bh(i, :, :)  = fdr_bh(p_uncorr(i, :, :), alpha, 'pdep', 'no');
-        h_by(i, :, :)  = fdr_bh(p_uncorr(i, :, :), alpha, 'dep', 'no');
-        h_bky(i, :, :) = fdr_bky(p_uncorr(i, :, :), alpha, 'no');
+        p_uncorrected(i, :, :) = 1 - fcdf(F_obs, df_effect, df_res);
+        h_uncorrected(i, :, :) = p_uncorrected(i, :, :) <= alpha;
+        h_bh(i, :, :)  = fdr_bh(p_uncorrected(i, :, :), alpha, 'pdep', 'no');
+        h_by(i, :, :)  = fdr_bh(p_uncorrected(i, :, :), alpha, 'dep', 'no');
+        h_bky(i, :, :) = fdr_bky(p_uncorrected(i, :, :), alpha, 'no');
         
         %Mean amplitude ANOVA
         mean_wind_data = mean(mean(data, 1), 2);
@@ -140,9 +141,9 @@ function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, n_exp, n
     sim_time = toc;
     
     %Calcluate Dunn-Sidak corrected results
-    p_sidak = 1-(1-p_uncorr).^(n_electrodes*n_time_pts);
+    p_sidak = 1-(1-p_uncorrected).^(n_electrodes*n_time_pts);
     p_sidak(p_sidak>1) = 1;
-    h_sidak = p_sidak < alpha;
+    h_sidak = p_sidak <= alpha;
     
     
     %% ####################################################################
@@ -151,14 +152,12 @@ function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, n_exp, n
     
     %Save results
     time_stamp = sprintf('%s_%s', datestr(datetime('now'),'ddmmmyy'), datestr(datetime('now'),'HHMM'));
-    if save_results
-        %save(sprintf('R:\\Public\\GK_lab\\Eric\\Stats Simulations\\erps\\RealERP_simulation_%s.mat', time_stamp), '-v7.3'); 
-        diary(fullfile(main_dir, 'results', 'MUSim_results.txt'));
+    if output_file
+        diary(output_file);
     end
     
-    if ~effect
-        effect = 'none (null)';
-        effect_description = 'all effects null';
+    if strcmpi(effect, 'null')
+        effect_description = '';
     end
     
     %Print output
@@ -175,51 +174,63 @@ function run_real_erp_sim(effect, time_wind, electrodes, factor_levels, n_exp, n
     fprintf('Time window: %d - %d\n', time_wind(1), time_wind(2));
     fprintf('Electrodes: ');
     fprintf([sprintf('%d, ', electrodes(1:end-1)), num2str(electrodes(end))]);
-    fprintf('\nError multiplier = ');
-    fprintf('%.1f  ', error_mult);
     fprintf('\nFactor levels: ');
     fprintf('%d  ', factor_levels);
+    fprintf('\nError multiplier = ');
+    fprintf('%.1f  ', error_mult);
     fprintf('\nTrials = ');
     fprintf('%d  ', cond_trials);
     fprintf('\n');
     
-    fprintf('\nCLUSTER MASS 0.05 RESULTS\n')
-    fprintf('Rejection rate all time points (individually) = %f\n', mean(h_clust05(:)));
-    fprintf('Family-wise rejection rate = %f\n', mean(any(reshape(h_clust05, n_exp, n_electrodes*n_sample_time_pts)')));
-    
-    fprintf('\nCLUSTER MASS 0.01 RESULTS\n')
-    fprintf('Rejection rate all time points (individually) = %f\n', mean(h_clust01(:)));
-    fprintf('Family-wise rejection rate = %f\n', mean(any(reshape(h_clust01, n_exp, n_electrodes*n_sample_time_pts)')));
-    
-    fprintf('\nFMAX RESULTS\n')
-    fprintf('Rejection rate all time points (individually) = %f\n', mean(h_Fmax(:)));
-    fprintf('Family-wise rejection rate = %f\n', mean(any(reshape(h_Fmax, n_exp, n_electrodes*n_sample_time_pts)')));
-    
-    fprintf('\nBH FDR RESULTS\n')
-    fprintf('Rejection rate all time points (individually) = %f\n', mean(h_bh(:)));
-    fprintf('Family-wise rejection rate = %f\n', mean(any(reshape(h_bh, n_exp, n_electrodes*n_sample_time_pts)')));
-    
-    fprintf('\nBY FDR RESULTS\n')
-    fprintf('Rejection rate all time points (individually) = %f\n', mean(h_by(:)));
-    fprintf('Family-wise rejection rate = %f\n', mean(any(reshape(h_by, n_exp, n_electrodes*n_sample_time_pts)')));
-    
-    fprintf('\nBKY FDR RESULTS\n')
-    fprintf('Rejection rate all time points (individually) = %f\n', mean(h_bky(:)));
-    fprintf('Family-wise rejection rate = %f\n', mean(any(reshape(h_bky, n_exp, n_electrodes*n_sample_time_pts)')));
-    
     fprintf('\nMEAN WINDOW/REGION PARAMETRIC F-TEST RESULTS\n')
-    fprintf('Rejection rate = %f\n\n', mean(h_mean_amp));
+    fprintf('Rejection rate = %.3f\n', mean(h_mean_amp));
     
-    fprintf('DUNN-SIDAK CORRECTED PARAMETRIC F-TEST RESULTS\n');
-    fprintf('Rejection rate all time points (individually) = %f\n', mean(h_sidak(:)));
-    fprintf('Family-wise rejection rate = %f\n', mean(any(reshape(h_sidak, n_exp, n_electrodes*n_sample_time_pts)')));
+    %Find time points with effect
+    effect_loc = false(1, end_sample-start_sample+1);
+    if ~strcmpi(effect, 'null')
+        i = 0;
+        for t = start_sample:end_sample
+            i = i + 1;
+            effect_loc(i) = ~all(all(effects_data(:, t, :) == effects_data(:, t, 1)));
+        end
+    end
     
-    fprintf('\nUNCORRECTED PARAMETRIC F-TEST RESULTS\n');
-    fprintf('Rejection rate all time points (individually) = %f\n', mean(h_uncorr(:)));
-    fprintf('Family-wise rejection error rate = %f\n', mean(any(reshape(h_uncorr, n_exp, n_electrodes*n_sample_time_pts)')));
+    fprintf('\nUNCORRECTED RESULTS\n');
+    summarize_results(effect_loc, h_uncorrected);
+    
+    fprintf('\nSIDAK RESULTS\n');
+    summarize_results(effect_loc, h_sidak);
+    
+    fprintf('\nFMAX RESULTS\n');
+    summarize_results(effect_loc, h_Fmax);
+    
+    fprintf('\nCLUSTER 0.05 RESULTS\n');
+    summarize_results(effect_loc, h_clust05);
+    
+    fprintf('\nCLUSTER 0.01 RESULTS\n');
+    summarize_results(effect_loc, h_clust01);
+    
+    fprintf('\nBH FDR RESULTS\n');
+    summarize_results(effect_loc, h_bh);
+    
+    fprintf('\nBY FDR RESULTS\n');
+    summarize_results(effect_loc, h_by);
+    
+    fprintf('\nBKY FDR RESULTS\n');
+    summarize_results(effect_loc, h_bky);
     
     fprintf('\n----------------------------------------------------------------------------------\n\n')
     
     diary off
     
+end
+
+function summarize_results(effect_loc, nht)
+
+nht_effect = nht(:, :, effect_loc);
+    nht_null   = nht(:, :, ~effect_loc);
+    fprintf('Rejection rate at individual time points with effect (element-wise power) = %.3f\n', mean(mean(any(nht_effect, 2))));
+    fprintf('Rejection rate at individual time points with null effect (element-wise Type I error) = %.3f\n', mean(mean(any(nht_null, 2))));
+    fprintf('Family-wise rejection rate across time points with effect (familywise power) = %.3f\n', mean(any(any(nht_effect, 2), 3)));
+    fprintf('Family-wise rejection rate across time points with null effect (familywise Type I error) = %.3f\n', mean(any(any(nht_null, 2), 3)));
 end
