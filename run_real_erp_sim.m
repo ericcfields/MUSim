@@ -2,7 +2,7 @@
 %with data constructed from real EEG noise trials and real ERP effects
 %
 %Author: Eric Fields
-%Version Date: 5 April 2019
+%Version Date: 8 April 2019
 
 function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, output_file)
 
@@ -165,25 +165,27 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, n
     fprintf('----------------------------------------------------------------------------------\n')
     fprintf('****SIMULATION SUMMARY****\n')
     fprintf('%s\n', time_stamp);
-    fprintf('\nSimulation took %.2f minutes\n', sim_time/60);
+    fprintf('\nSimulation took\t%.2f minutes\n', sim_time/60);
     
     fprintf('\nUsing real EEG noise trials\n');
-    fprintf('%d simulated experiments, %d permutations each, %d subjects\n', n_exp, n_perm, n_subs);
-    fprintf('\nEffect: %s', effect);
-    fprintf('\nEffect description: %s\n', effect_description);
-    fprintf('Time window: %d - %d\n', time_wind(1), time_wind(2));
-    fprintf('Electrodes: ');
+    fprintf('Simulated experiments =\t%d\n', n_exp);
+    fprintf('Permutations =\t%d\n', n_perm);
+    fprintf('Sample size =\t%d\n', n_subs);
+    fprintf('\nEffect:\t%s', effect);
+    fprintf('\nEffect description:\t%s\n', effect_description);
+    fprintf('Time window:\t%d - %d\n', time_wind(1), time_wind(2));
+    fprintf('Electrodes:\t');
     fprintf([sprintf('%d, ', electrodes(1:end-1)), num2str(electrodes(end))]);
-    fprintf('\nFactor levels: ');
+    fprintf('\nFactor levels:\t');
     fprintf('%d  ', factor_levels);
-    fprintf('\nError multiplier = ');
+    fprintf('\nError multiplier =\t');
     fprintf('%.1f  ', error_mult);
-    fprintf('\nTrials = ');
+    fprintf('\nTrials =\t');
     fprintf('%d  ', cond_trials);
     fprintf('\n');
     
     fprintf('\nMEAN WINDOW/REGION PARAMETRIC F-TEST RESULTS\n')
-    fprintf('Rejection rate = %.3f\n', mean(h_mean_amp));
+    fprintf('Rejection rate =\t%.3f\n', mean(h_mean_amp));
     
     %Find time points with effect
     effect_loc = false(1, end_sample-start_sample+1);
@@ -227,25 +229,32 @@ end
 
 function summarize_results(effect_loc, nht)
 
+    [n_perm, ~, n_time_pts] = size(nht);
+
     %Get simulated experiments that found a significant result
-    sig_studies = any(any(nht, 2), 3);
+    sig_studies = any(nht, [2, 3]);
+    
+    %Collapse across electrodes
+    nht_t = reshape(any(nht, 2), [n_perm, n_time_pts]);
     
     %Get null hypothesis test at locations with and without real effect
     %separately
-    nht_effect = nht(:, :, effect_loc);
-    nht_null   = nht(:, :, ~effect_loc);
+    nht_effect = nht_t(:, effect_loc);
+    nht_null   = nht_t(:, ~effect_loc);
     
     %Report family-wiise rejection rate
     fprintf('-- Family-wise rejection rates --\n');
-    fprintf('Family-wise rejection rate across time points with effect (familywise power) = %.3f\n',                 mean(any(any(nht_effect, 2), 3)));
-    fprintf('Family-wise rejection rate across time points with null effect (familywise Type I error) = %.3f\n',     mean(any(any(nht_null, 2), 3)));
+    fprintf('Family-wise rejection rate across time points with effect (familywise power) =\t%.3f\n',                 mean(any(nht_effect, 2)));
+    fprintf('Family-wise rejection rate across time points with null effect (familywise Type I error) =\t%.3f\n',     mean(any(nht_null, 2)));
     
     %Report element-wise rejection rate within studies with significant
     %results
     fprintf('-- Element-wise rejection rates --\n');
-    fprintf('Mean rejection rate at individual time points with effect (element-wise power) = %.3f\n',               mean(mean(any(nht_effect(sig_studies, :, :), 2))));
-    fprintf('Median rejection rate at individual time points with effect (element-wise power) = %.3f\n',             median(mean(any(nht_effect(sig_studies, :, :), 2), 3)));
-    fprintf('Mean rejection rate at individual time points with null effect (element-wise Type I error) = %.3f\n',   mean(mean(any(nht_null(sig_studies, :, :), 2))));
-    fprintf('Median rejection rate at individual time points with null effect (element-wise Type I error) = %.3f\n', median(mean(any(nht_null(sig_studies, :, :), 2), 3)));
+    fprintf('Mean rejection rate at individual time points with effect (element-wise power) =\t%.3f\n',               mean(mean(nht_effect(sig_studies, :))));
+    fprintf('Median rejection rate at individual time points with effect (element-wise power) =\t%.3f\n',             median(mean(nht_effect(sig_studies, :), 2)));
+    fprintf('Mean rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n',   mean(mean(nht_null(sig_studies, :))));
+    fprintf('Median rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n', median(mean(nht_null(sig_studies, :), 2)));
+    fprintf('Mean element-wise false discovery rate =\t%.3f\n',                                                       mean(sum(nht_null, 2) ./ (sum(nht_null, 2) + sum(nht_effect, 2))));
+    fprintf('Median element-wise false discovery rate =\t%.3f\n',                                                     median(sum(nht_null, 2) ./ (sum(nht_null, 2) + sum(nht_effect, 2))));
     
 end

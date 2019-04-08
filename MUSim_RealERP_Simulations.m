@@ -1,7 +1,7 @@
 %Run stats simulations with real EEG noise trials and effects
 %
 %Author: Eric Fields
-%Version Date: 5 April 2019
+%Version Date: 8 April 2019
 
 %% SET-UP
 
@@ -22,12 +22,12 @@ end
 noise = fullfile(main_dir, 'data', 'noise_trials.mat');
 
 %Simulated data parameters
-n_exp  = 5e3;
-n_perm = 5e3;
-n_subs = 24;
-cond_trials = 20;
-error_mult = 1;
-ind_var_factor = 0.1;
+n_exp  = 1e3; %number of simulated experiments
+n_perm = 1e3; %permutations per experiment for Fmax and clust procedures
+n_subs = 24;  %number of subjects in each simulated experiment
+cond_trials = 20; %number of trials in each condition
+error_mult = 1;   %factor to multiple error standard deviation by (can be array for testing unequal variances)
+ind_var_factor = 0.1; %standard deviation of multiplier for individual differences in effects
 
 %Analysis parameters
 sim_list = readtable(fullfile(main_dir, 'MUSim_simulation_parameters.csv'));
@@ -36,7 +36,14 @@ alpha = 0.05;
 %File for saving results
 output_file = fullfile(main_dir, 'results', 'MUSim_results.txt');
 
+
+%% RUN SIMULATIONS
+
 for s = 1:size(sim_list, 1)
+    
+    if ~sim_list{s, 'include'}
+        continue;
+    end
     
     effect = fullfile(main_dir, 'data', sim_list{s, 'effect'}{1});
     factor_levels = sim_list{s, 'factor_levels'};
