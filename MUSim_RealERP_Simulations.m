@@ -34,7 +34,7 @@ sim_list = readtable(fullfile(main_dir, 'MUSim_simulation_parameters.csv'));
 alpha = 0.05;
 
 %File for saving results
-output_file = fullfile(main_dir, 'results', 'MUSim_results.txt');
+output_file = false; %fullfile(main_dir, 'results', 'MUSim_results.txt');
 
 
 %% RUN SIMULATIONS

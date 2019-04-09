@@ -2,7 +2,7 @@
 %with data constructed from real EEG noise trials and real ERP effects
 %
 %Author: Eric Fields
-%Version Date: 8 April 2019
+%Version Date: 9 April 2019
 
 function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, output_file)
 
@@ -232,7 +232,7 @@ function summarize_results(effect_loc, nht)
     [n_perm, ~, n_time_pts] = size(nht);
 
     %Get simulated experiments that found a significant result
-    sig_studies = any(nht, [2, 3]);
+    sig_studies = any(any(nht, 2), 3);
     
     %Collapse across electrodes
     nht_t = reshape(any(nht, 2), [n_perm, n_time_pts]);
