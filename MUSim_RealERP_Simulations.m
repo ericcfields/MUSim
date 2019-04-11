@@ -22,8 +22,8 @@ end
 noise = fullfile(main_dir, 'data', 'noise_trials.mat');
 
 %Simulated data parameters
-n_exp  = 1e3; %number of simulated experiments
-n_perm = 1e3; %permutations per experiment for Fmax and clust procedures
+n_exp  = 5e3; %number of simulated experiments
+n_perm = 5e3; %permutations per experiment for Fmax and clust procedures
 n_subs = 24;  %number of subjects in each simulated experiment
 cond_trials = 20; %number of trials in each condition
 error_mult = 1;   %factor to multiple error standard deviation by (can be array for testing unequal variances)
@@ -34,7 +34,7 @@ sim_list = readtable(fullfile(main_dir, 'MUSim_simulation_parameters.csv'));
 alpha = 0.05;
 
 %File for saving results
-output_file = false; %fullfile(main_dir, 'results', 'MUSim_results.txt');
+output_file = fullfile(main_dir, 'results', 'MUSim_results.txt');
 
 
 %% RUN SIMULATIONS
