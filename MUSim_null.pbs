@@ -1,9 +1,6 @@
 #!/bin/tcsh
-#PBS -l pmem=4gb,nodes=1:ppn=28,walltime=24:00:00
-#PBS -m abe -M eric.fields@bc.edu
-#PBS -o /gsfs0/data/fields/MUSim/torque_output/MUSim_pbs_o$PBS_JOBID.txt
-#PBS -e /gsfs0/data/fields/MUSim/torque_output/MUSim_pbs_e$PBS_JOBID.txt
+#PBS -l pmem=4gb,nodes=2:ppn=28,walltime=24:00:00
 
 module load matlab/2018a
 cd /gsfs0/data/fields/MUSim
-matlab -nodisplay -nosplash -nodesktop -r "c = parcluster('local'); c.NumWorkers = 28; parpool(28); run('MUSim_Null_Simulations.m'); exit;"
+matlab -nodisplay -nosplash -nodesktop -r "c = parcluster('local'); c.NumWorkers = 56; parpool(56); run('MUSim_Null_Simulations.m'); exit;"

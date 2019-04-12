@@ -4,7 +4,7 @@
 %Author: Eric Fields
 %Version Date: 12 April 2019
 
-function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, output_file)
+function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, dims, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, output_file)
 
     
     %% ####################################################################
@@ -115,7 +115,7 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, n
         data = reshape(data,[n_electrodes, n_sample_time_pts, factor_levels, n_subs]);
         
         %Run ANOVA
-        [F_obs, F_dist, df_effect, df_res] = perm_rbANOVA(data, 3, n_perm);
+        [F_obs, F_dist, df_effect, df_res, exact_test] = perm_rbANOVA(data, dims, n_perm);
         
         %Fmax
         h_Fmax(i, :, :) = Fmax_corr(F_obs, F_dist, alpha);

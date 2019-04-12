@@ -22,8 +22,8 @@ end
 noise = fullfile(main_dir, 'data', 'noise_trials.mat');
 
 %Simulated data parameters
-n_exp  = 1e3; %number of simulated experiments
-n_perm = 1e3; %permutations per experiment for Fmax and clust procedures
+n_exp  = 1e4; %number of simulated experiments
+n_perm = 5e3; %permutations per experiment for Fmax and clust procedures
 n_subs = 24;  %number of subjects in each simulated experiment
 cond_trials = 20; %number of trials in each condition
 error_mult = 1;   %factor to multiple error standard deviation by (can be array for testing unequal variances)
@@ -55,6 +55,6 @@ for s = 1:size(sim_list, 1)
     time_wind = [sim_list{s, 'start_time'}, sim_list{s, 'end_time'}];
     electrodes = eval(['[' sim_list{s, 'electrodes'}{1} ']']);
     
-    run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, output_file);
+    run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, 3, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, output_file)
     
 end
