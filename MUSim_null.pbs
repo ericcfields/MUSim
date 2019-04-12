@@ -6,4 +6,4 @@
 
 module load matlab/2018a
 cd /gsfs0/data/fields/MUSim
-matlab -nodisplay -nosplash -nodesktop -r "c = parcluster('local'); c.NumWorkers = 28; parpool(28); run('MUSim_RealERP_Simulations.m'); exit;"
+matlab -nodisplay -nosplash -nodesktop -r "c = parcluster('local'); c.NumWorkers = 28; parpool(28); run('MUSim_Null_Simulations.m'); exit;"

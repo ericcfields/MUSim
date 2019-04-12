@@ -30,6 +30,8 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, n
             error('factor_levels input doesn''t match effects data');
         end
         effects_data = effects_data(electrodes, :, :);
+    else
+        effects_data = [];
     end
 
     %Some key numbers
@@ -133,7 +135,7 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, n
         
         %Mean amplitude ANOVA
         mean_wind_data = mean(mean(data, 1), 2);
-        mean_wind_data = reshape(mean_wind_data, [size(mean_wind_data, 1), size(mean_wind_data, 2), factor_levels, size(mean_wind_data, 4)]);
+        mean_wind_data = reshape(mean_wind_data, [size(mean_wind_data, 1), size(mean_wind_data, 2), factor_levels, size(mean_wind_data, ndims(mean_wind_data))]);
         param_results = calc_param_ANOVA(mean_wind_data, [], (1:length(factor_levels > 1))+2, alpha);
         h_mean_amp(i) = param_results.h;
         
@@ -227,7 +229,7 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, n
     
 end
 
-function summarize_results(effect_loc, nht, times)
+function summarize_results(effect_loc, nht, time_ids)
 
     [n_perm, ~, n_time_pts] = size(nht);
 
@@ -263,20 +265,27 @@ function summarize_results(effect_loc, nht, times)
     fprintf('Median element-wise false discovery rate =\t%.3f\n',                                                     median(sum(nht_null_sig, 2) ./ (sum(nht_null_sig, 2) + sum(nht_effect_sig, 2))));
     
     %Get earliest and latest time points
-    onset_time = NaN(sum(sig_studies), 1);
-    offset_time = NaN(sum(sig_studies), 1);
-    j = 0;
-    for i = 1:n_perm
-        if sig_studies(i)
-            j = j + 1;
-            onset_time(j) = find(nht_t(i, :), 1);
-            offset_time(j) = find(nht_t(i, :), 1, 'last');
-        end
-    end
     fprintf('-- Onset and Offset Times --\n');
-    fprintf('Mean onset time =\t%d\n', times(round(mean(onset_time))));
-    fprintf('Median onset time =\t%d\n', times(round(median(onset_time))));
-    fprintf('Mean offset time =\t%d\n', times(round(mean(offset_time))));
-    fprintf('Median offset time =\t%d\n', times(round(median(offset_time))));
+    if any(sig_studies)
+        onset_time = NaN(sum(sig_studies), 1);
+        offset_time = NaN(sum(sig_studies), 1);
+        j = 0;
+        for i = 1:n_perm
+            if sig_studies(i)
+                j = j + 1;
+                onset_time(j) = find(nht_t(i, :), 1);
+                offset_time(j) = find(nht_t(i, :), 1, 'last');
+            end
+        end       
+        fprintf('Mean onset time =\t%d\n', time_ids(round(mean(onset_time))));
+        fprintf('Median onset time =\t%d\n', time_ids(round(median(onset_time))));
+        fprintf('Mean offset time =\t%d\n', time_ids(round(mean(offset_time))));
+        fprintf('Median offset time =\t%d\n', time_ids(round(median(offset_time))));
+    else
+        fprintf('Mean onset time =\t%d\n', NaN);
+        fprintf('Median onset time =\t%d\n', NaN);
+        fprintf('Mean offset time =\t%d\n', NaN);
+        fprintf('Median offset time =\t%d\n', NaN);
+    end
     
 end

@@ -1,7 +1,7 @@
 %Run stats simulations with real EEG noise trials and effects
 %
 %Author: Eric Fields
-%Version Date: 8 April 2019
+%Version Date: 12 April 2019
 
 %% SET-UP
 
@@ -30,11 +30,12 @@ error_mult = 1;   %factor to multiple error standard deviation by (can be array 
 ind_var_factor = 0.1; %standard deviation of multiplier for individual differences in effects
 
 %Analysis parameters
-sim_list = readtable(fullfile(main_dir, 'MUSim_simulation_parameters.csv'));
+param_file = fullfile(main_dir, 'MUSim_power_sim_params.csv');
+sim_list = readtable(param_file);
 alpha = 0.05;
 
 %File for saving results
-output_file = fullfile(main_dir, 'results', 'MUSim_results.txt');
+output_file = fullfile(main_dir, 'results', 'MUSim_power_results.txt');
 
 
 %% RUN SIMULATIONS
@@ -45,7 +46,11 @@ for s = 1:size(sim_list, 1)
         continue;
     end
     
-    effect = fullfile(main_dir, 'data', sim_list{s, 'effect'}{1});
+    if ~strcmpi(sim_list{s, 'effect'}{1}, 'null')
+        effect = fullfile(main_dir, 'data', sim_list{s, 'effect'}{1});
+    else
+        effect = sim_list{s, 'effect'}{1};
+    end
     factor_levels = sim_list{s, 'factor_levels'};
     time_wind = [sim_list{s, 'start_time'}, sim_list{s, 'end_time'}];
     electrodes = eval(['[' sim_list{s, 'electrodes'}{1} ']']);
