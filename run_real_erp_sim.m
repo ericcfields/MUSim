@@ -198,28 +198,28 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, n
     end
     
     fprintf('\nUNCORRECTED RESULTS\n');
-    summarize_results(effect_loc, h_uncorrected);
+    summarize_results(effect_loc, h_uncorrected, noise_trials.times(start_sample:end_sample));
     
     fprintf('\nSIDAK RESULTS\n');
-    summarize_results(effect_loc, h_sidak);
+    summarize_results(effect_loc, h_sidak, noise_trials.times(start_sample:end_sample));
     
     fprintf('\nFMAX RESULTS\n');
-    summarize_results(effect_loc, h_Fmax);
+    summarize_results(effect_loc, h_Fmax, noise_trials.times(start_sample:end_sample));
     
     fprintf('\nCLUSTER 0.05 RESULTS\n');
-    summarize_results(effect_loc, h_clust05);
+    summarize_results(effect_loc, h_clust05, noise_trials.times(start_sample:end_sample));
     
     fprintf('\nCLUSTER 0.01 RESULTS\n');
-    summarize_results(effect_loc, h_clust01);
+    summarize_results(effect_loc, h_clust01, noise_trials.times(start_sample:end_sample));
     
     fprintf('\nBH FDR RESULTS\n');
-    summarize_results(effect_loc, h_bh);
+    summarize_results(effect_loc, h_bh, noise_trials.times(start_sample:end_sample));
     
     fprintf('\nBY FDR RESULTS\n');
-    summarize_results(effect_loc, h_by);
+    summarize_results(effect_loc, h_by, noise_trials.times(start_sample:end_sample));
     
     fprintf('\nBKY FDR RESULTS\n');
-    summarize_results(effect_loc, h_bky);
+    summarize_results(effect_loc, h_bky, noise_trials.times(start_sample:end_sample));
     
     fprintf('\n----------------------------------------------------------------------------------\n\n')
     
@@ -227,7 +227,7 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, n
     
 end
 
-function summarize_results(effect_loc, nht)
+function summarize_results(effect_loc, nht, times)
 
     [n_perm, ~, n_time_pts] = size(nht);
 
@@ -261,5 +261,22 @@ function summarize_results(effect_loc, nht)
     fprintf('Median rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n', median(mean(nht_null_sig, 2)));
     fprintf('Mean element-wise false discovery rate =\t%.3f\n',                                                       mean(sum(nht_null_sig, 2) ./ (sum(nht_null_sig, 2) + sum(nht_effect_sig, 2))));
     fprintf('Median element-wise false discovery rate =\t%.3f\n',                                                     median(sum(nht_null_sig, 2) ./ (sum(nht_null_sig, 2) + sum(nht_effect_sig, 2))));
+    
+    %Get earliest and latest time points
+    onset_time = NaN(sum(sig_studies), 1);
+    offset_time = NaN(sum(sig_studies), 1);
+    j = 0;
+    for i = 1:n_perm
+        if sig_studies(i)
+            j = j + 1;
+            onset_time(j) = find(nht_t(i, :), 1);
+            offset_time(j) = find(nht_t(i, :), 1, 'last');
+        end
+    end
+    fprintf('-- Onset and Offset Times --\n');
+    fprintf('Mean onset time =\t%d\n', times(round(mean(onset_time))));
+    fprintf('Median onset time =\t%d\n', times(round(median(onset_time))));
+    fprintf('Mean offset time =\t%d\n', times(round(mean(offset_time))));
+    fprintf('Median offset time =\t%d\n', times(round(median(offset_time))));
     
 end

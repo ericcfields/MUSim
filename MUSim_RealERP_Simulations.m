@@ -22,8 +22,8 @@ end
 noise = fullfile(main_dir, 'data', 'noise_trials.mat');
 
 %Simulated data parameters
-n_exp  = 1e2; %number of simulated experiments
-n_perm = 1e2; %permutations per experiment for Fmax and clust procedures
+n_exp  = 1e3; %number of simulated experiments
+n_perm = 1e3; %permutations per experiment for Fmax and clust procedures
 n_subs = 24;  %number of subjects in each simulated experiment
 cond_trials = 20; %number of trials in each condition
 error_mult = 1;   %factor to multiple error standard deviation by (can be array for testing unequal variances)
