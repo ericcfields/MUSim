@@ -2,7 +2,7 @@
 %with data constructed from real EEG noise trials and real ERP effects
 %
 %Author: Eric Fields
-%Version Date: 9 April 2019
+%Version Date: 12 April 2019
 
 function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, output_file)
 
@@ -254,7 +254,7 @@ function summarize_results(effect_loc, nht)
     fprintf('Median rejection rate at individual time points with effect (element-wise power) =\t%.3f\n',             median(mean(nht_effect(sig_studies, :), 2)));
     fprintf('Mean rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n',   mean(mean(nht_null(sig_studies, :))));
     fprintf('Median rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n', median(mean(nht_null(sig_studies, :), 2)));
-    fprintf('Mean element-wise false discovery rate =\t%.3f\n',                                                       mean(sum(nht_null, 2) ./ (sum(nht_null, 2) + sum(nht_effect, 2))));
-    fprintf('Median element-wise false discovery rate =\t%.3f\n',                                                     median(sum(nht_null, 2) ./ (sum(nht_null, 2) + sum(nht_effect, 2))));
+    fprintf('Mean element-wise false discovery rate =\t%.3f\n',                                                       mean(sum(nht_null(sig_studies, :), 2) ./ (sum(nht_null(sig_studies, :), 2) + sum(nht_effect(sig_studies, :), 2))));
+    fprintf('Median element-wise false discovery rate =\t%.3f\n',                                                     median(sum(nht_null(sig_studies, :), 2) ./ (sum(nht_null(sig_studies, :), 2) + sum(nht_effect(sig_studies, :), 2))));
     
 end
