@@ -242,6 +242,11 @@ function summarize_results(effect_loc, nht)
     nht_effect = nht_t(:, effect_loc);
     nht_null   = nht_t(:, ~effect_loc);
     
+    %Get the same info for the subset of studies that found significant
+    %results
+    nht_effect_sig = nht_effect(sig_studies, :);
+    nht_null_sig   = nht_null(sig_studies, :);
+    
     %Report family-wiise rejection rate
     fprintf('-- Family-wise rejection rates --\n');
     fprintf('Family-wise rejection rate across time points with effect (familywise power) =\t%.3f\n',                 mean(any(nht_effect, 2)));
@@ -250,11 +255,11 @@ function summarize_results(effect_loc, nht)
     %Report element-wise rejection rate within studies with significant
     %results
     fprintf('-- Element-wise rejection rates --\n');
-    fprintf('Mean rejection rate at individual time points with effect (element-wise power) =\t%.3f\n',               mean(mean(nht_effect(sig_studies, :))));
-    fprintf('Median rejection rate at individual time points with effect (element-wise power) =\t%.3f\n',             median(mean(nht_effect(sig_studies, :), 2)));
-    fprintf('Mean rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n',   mean(mean(nht_null(sig_studies, :))));
-    fprintf('Median rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n', median(mean(nht_null(sig_studies, :), 2)));
-    fprintf('Mean element-wise false discovery rate =\t%.3f\n',                                                       mean(sum(nht_null(sig_studies, :), 2) ./ (sum(nht_null(sig_studies, :), 2) + sum(nht_effect(sig_studies, :), 2))));
-    fprintf('Median element-wise false discovery rate =\t%.3f\n',                                                     median(sum(nht_null(sig_studies, :), 2) ./ (sum(nht_null(sig_studies, :), 2) + sum(nht_effect(sig_studies, :), 2))));
+    fprintf('Mean rejection rate at individual time points with effect (element-wise power) =\t%.3f\n',               mean(mean(nht_effect_sig)));
+    fprintf('Median rejection rate at individual time points with effect (element-wise power) =\t%.3f\n',             median(mean(nht_effect_sig, 2)));
+    fprintf('Mean rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n',   mean(mean(nht_null_sig)));
+    fprintf('Median rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n', median(mean(nht_null_sig, 2)));
+    fprintf('Mean element-wise false discovery rate =\t%.3f\n',                                                       mean(sum(nht_null_sig, 2) ./ (sum(nht_null_sig, 2) + sum(nht_effect_sig, 2))));
+    fprintf('Median element-wise false discovery rate =\t%.3f\n',                                                     median(sum(nht_null_sig, 2) ./ (sum(nht_null_sig, 2) + sum(nht_effect_sig, 2))));
     
 end
