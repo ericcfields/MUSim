@@ -22,8 +22,8 @@ end
 noise = fullfile(main_dir, 'data', 'noise_trials.mat');
 
 %Simulated data parameters
-n_exp  = 1e3; %number of simulated experiments
-n_perm = 1e3; %permutations per experiment for Fmax and clust procedures
+n_exp  = 1e4; %number of simulated experiments
+n_perm = 5e3; %permutations per experiment for Fmax and clust procedures
 error_mult = 1;   %factor to multiple error standard deviation by (can be array for testing unequal variances)
 ind_var_factor = 0.1; %standard deviation of multiplier for individual differences in effects
 
@@ -39,11 +39,11 @@ output_file = fullfile(main_dir, 'results', 'MUSim_null_results.txt');
 effect = 'null';
 factor_levels = [3, 3];
 dims = [3, 4];
-time_windows = {[0 300], [500 900]};
+time_windows = {[0 300], [300 1000]};
 electrodes = 1:32;
 
-for n_subs = [40, 25, 16, 12, 8]
-    for cond_trials = [20, 40]
+for n_subs = [25, 16, 12, 8]
+    for cond_trials = 40
         for t = 1:length(time_windows)
             time_wind = time_windows{t};
             run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, dims, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, output_file)
