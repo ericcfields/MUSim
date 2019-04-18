@@ -4,31 +4,24 @@
 Compile MUSim simulation results into more usable csv files
 
 Author: Eric Fields
-Version Date: 17 April 2019
+Version Date: 18 April 2019
 """
 
 import os
 from os.path import join
 import pandas as pd
 
-def parse_results(results_file, measure_name, measure_text, output_file=False, main_dir=None):
+def parse_results(results_file, measure_text):
     """
     Make csv for a particular measure
     
     INPUTS
     results_file  - Text file output by MUSim simulations
-    measure_name  - Name of the measure for the output file
     measure_text  - Text of measure in results file
-    output_file   - Boolean specifying whether to create csv output
-    main_dir      - Main directory for MUSim
     
     OUTPUTS
     results_df   - data frame with parsed results
     """
-    
-    #Default to current directory as main directory
-    if main_dir is None:
-        main_dir = os.getcwd()
     
     #Read in results file
     with open(results_file) as f_in:
@@ -104,21 +97,13 @@ def parse_results(results_file, measure_name, measure_text, output_file=False, m
             (field, value) = line.split('\t')
             results_df.loc[r, method] = float(value)
     
-    #Output results to csv if requested
-    if output_file:
-        output_file = join(main_dir, 'results', 'MUSim_%s.csv' % measure_name)
-        results_df.to_csv(output_file, index=False)
-    
     return results_df
 
-def make_power_csvs():
-    
-    main_dir = r'C:\Users\ecfne\Documents\Eric\Research\Stats Simulations\MUSim'
-    results_file = join(main_dir, 'results', 'MUSim_power_results.txt')
+def make_power_csvs(results_file):
     
     #Measure names and texts
     measures = {'FamilywisePower': 'Family-wise rejection rate across time points with effect (familywise power)',
-                'FamilywsieTypeI': 'Family-wise rejection rate across time points with null effect (familywise Type I error)',
+                'FamilywiseTypeI': 'Family-wise rejection rate across time points with null effect (familywise Type I error)',
                 'Mean_EW_Power': 'Mean rejection rate at individual time points with effect (element-wise power)',
                 'Median_EW_Power': 'Median rejection rate at individual time points with effect (element-wise power)',
                 'Mean_EW_TypeI': 'Mean rejection rate at individual time points with null effect (element-wise Type I error)',
@@ -128,14 +113,34 @@ def make_power_csvs():
     
     #Produce csv for all measures
     for measure_name in measures:
-        parse_results(results_file, measure_name, measures[measure_name], output_file=True, main_dir=main_dir)
+        results_df = parse_results(results_file, measures[measure_name])
+        results_dir = os.path.dirname(results_file)
+        output_file = join(results_dir, 'MUSim_Power_%s.csv' % measure_name)
+        results_df.to_csv(output_file, index=False)
 
-def make_null_csvs():
-    pass
+def make_null_csvs(results_file):
+    
+    #Measure names and texts
+    measures = {'FamilywiseTypeI': 'Family-wise rejection rate across time points with null effect (familywise Type I error)',
+                'Mean_EW_TypeI': 'Mean rejection rate at individual time points with null effect (element-wise Type I error)',
+                'Median_EW_TypeI': 'Median rejection rate at individual time points with null effect (element-wise Type I error)'}
+    
+    #Produce csv for all measures
+    for measure_name in measures:
+        results_df = parse_results(results_file, measures[measure_name])
+        results_dir = os.path.dirname(results_file)
+        output_file = join(results_dir, 'MUSim_Null_%s.csv' % measure_name)
+        results_df.to_csv(output_file, index=False)
 
 def main():
-    make_power_csvs()
-    make_null_csvs()
+    
+    main_dir = r'C:\Users\ecfne\Documents\Eric\Research\Stats Simulations\MUSim'
+    
+    power_results_file = join(main_dir, 'results', 'MUSim_power_results.txt')
+    make_power_csvs(power_results_file)
+    
+    null_results_file = join(main_dir, 'results', 'MUSim_null_results.txt')
+    make_null_csvs(null_results_file)
 
 if __name__ == '__main__':
     main()
