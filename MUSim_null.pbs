@@ -1,5 +1,5 @@
 #!/bin/tcsh
-#PBS -l pmem=4gb,nodes=2:ppn=28,walltime=99:00:00
+#PBS -l pmem=4gb,nodes=2:ppn=28,walltime=48:00:00
 
 module load matlab/2018a
 cd /gsfs0/data/fields/MUSim

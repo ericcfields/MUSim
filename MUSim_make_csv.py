@@ -128,6 +128,7 @@ def make_null_csvs(results_file):
     #Produce csv for all measures
     for measure_name in measures:
         results_df = parse_results(results_file, measures[measure_name])
+        results_df.sort_values(['n_trials', 'n_subjects'], ascending=False, inplace=True)
         results_dir = os.path.dirname(results_file)
         output_file = join(results_dir, 'MUSim_Null_%s.csv' % measure_name)
         results_df.to_csv(output_file, index=False)
