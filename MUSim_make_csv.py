@@ -13,11 +13,11 @@ import pandas as pd
 
 def parse_results(results_file, measure_text):
     """
-    Make csv for a particular measure
+    Read results into data frame
     
     INPUTS
     results_file  - Text file output by MUSim simulations
-    measure_text  - Text of measure in results file
+    measure_text  - Text of measure of interest in results file
     
     OUTPUTS
     results_df   - data frame with parsed results
