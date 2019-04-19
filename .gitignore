@@ -15,6 +15,7 @@
 *.GRP
 *.pbs.o*
 *.pbs.e*
+*.ffs_gui
 
 ### Folders to completely ignore ###
 data/*
