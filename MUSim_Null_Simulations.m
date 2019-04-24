@@ -2,6 +2,11 @@
 %
 %Author: Eric Fields
 %Version Date: 12 April 2019
+%
+%Copyright (c) 2019, Eric C. Fields
+%All rights reserved.
+%This code is free and open source software made available under the 3-clause BSD license.
+%This software is provided "as is" and any express or implied warranties are disclaimed. 
 
 %% SET-UP
 
@@ -43,7 +48,7 @@ time_windows = {[0 300], [300 1000]};
 electrodes = 1:32;
 
 for n_subs = [40, 25, 16, 12, 8]
-    for cond_trials = 10
+    for cond_trials = [40, 20, 10]
         for t = 1:length(time_windows)
             time_wind = time_windows{t};
             run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, dims, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, output_file)

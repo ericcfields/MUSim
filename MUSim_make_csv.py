@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 #Python 3.7, Pandas 0.24
+#
+#Copyright (c) 2019, Eric C. Fields
+#All rights reserved.
+#This code is free and open source software made available under the 3-clause BSD license.
+#This software is provided "as is" and any express or implied warranties are disclaimed. 
 """
 Compile MUSim simulation results into more usable csv files
 
@@ -116,7 +121,7 @@ def make_power_csvs(results_file):
         results_df = parse_results(results_file, measures[measure_name])
         results_dir = os.path.dirname(results_file)
         output_file = join(results_dir, 'MUSim_Power_%s.csv' % measure_name)
-        results_df.to_csv(output_file, index=False)
+        results_df.to_csv(output_file, index=False, float_format='%.3f')
 
 def make_null_csvs(results_file):
     
@@ -131,7 +136,7 @@ def make_null_csvs(results_file):
         results_df.sort_values(['n_trials', 'n_subjects'], ascending=False, inplace=True)
         results_dir = os.path.dirname(results_file)
         output_file = join(results_dir, 'MUSim_Null_%s.csv' % measure_name)
-        results_df.to_csv(output_file, index=False)
+        results_df.to_csv(output_file, index=False, float_format='%.3f')
 
 def main():
     

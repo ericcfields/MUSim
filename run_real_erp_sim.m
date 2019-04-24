@@ -3,6 +3,11 @@
 %
 %Author: Eric Fields
 %Version Date: 19 April 2019
+%
+%Copyright (c) 2019, Eric C. Fields
+%All rights reserved.
+%This code is free and open source software made available under the 3-clause BSD license.
+%This software is provided "as is" and any express or implied warranties are disclaimed. 
 
 function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, dims, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, output_file)
 

@@ -2,6 +2,11 @@
 %
 %Author: Eric Fields
 %Version Date: 12 April 2019
+%
+%Copyright (c) 2019, Eric C. Fields
+%All rights reserved.
+%This code is free and open source software made available under the 3-clause BSD license.
+%This software is provided "as is" and any express or implied warranties are disclaimed. 
 
 %% SET-UP
 
