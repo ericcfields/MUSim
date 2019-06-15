@@ -1,6 +1,6 @@
 #!/bin/tcsh
-#PBS -l pmem=4gb,nodes=2:ppn=28,walltime=24:00:00
+#PBS -l pmem=4gb,nodes=2:ppn=28,walltime=99:00:00
 
-module load matlab/2018a
+module load matlab
 cd /gsfs0/data/fields/MUSim
 matlab -nodisplay -nosplash -nodesktop -r "c = parcluster(); c.NumWorkers = 56; parpool(56); run('MUSim_Power_Simulations.m'); exit;"
