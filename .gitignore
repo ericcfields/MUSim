@@ -1,5 +1,8 @@
 #Files to ignore for MUSim git repository
 
+### Files to ignore ###
+log.txt
+
 ### File types to completely ignore ###
 *.ffs_db
 *.lnk
@@ -16,6 +19,11 @@
 *.pbs.o*
 *.pbs.e*
 *.ffs_gui
+*.tif
+*.png
+*.jpeg
+*.gif
+*.bmp
 
 ### Folders to completely ignore ###
 data/*

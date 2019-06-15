@@ -2,7 +2,7 @@
 %with data constructed from real EEG noise trials and real ERP effects
 %
 %Author: Eric Fields
-%Version Date: 19 April 2019
+%Version Date: 15 June 2019
 %
 %Copyright (c) 2019, Eric C. Fields
 %All rights reserved.
@@ -146,6 +146,17 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, d
         param_results = calc_param_ANOVA(mean_wind_data, [], (1:length(factor_levels > 1))+2, alpha);
         h_mean_amp(i) = param_results.h;
         
+        %Record updates to file
+        if i == 10
+            f_out = fopen('log.txt', 'a');
+            fprintf(f_out, 'Simulation %d %s\n', i, datestr(datetime('now')));
+            fclose(f_out);
+        elseif mod(i,1000) == 0
+            f_out = fopen('log.txt', 'a');
+            fprintf(f_out, 'Simulation %d %s\n', i, datestr(datetime('now')));
+            fclose(f_out);
+        end
+        
     end
     sim_time = toc;
     
@@ -257,9 +268,13 @@ function summarize_results(effect_loc, nht, time_ids)
     nht_null_sig   = nht_null(sig_studies, :);
     
     %Report family-wiise rejection rate
+    nht_effect_fw = any(nht_effect, 2);
+    nht_null_fw = any(nht_null, 2);
     fprintf('-- Family-wise rejection rates --\n');
-    fprintf('Family-wise rejection rate across time points with effect (familywise power) =\t%.3f\n',                 mean(any(nht_effect, 2)));
-    fprintf('Family-wise rejection rate across time points with null effect (familywise Type I error) =\t%.3f\n',     mean(any(nht_null, 2)));
+    fprintf('Family-wise rejection rate across time points with effect (familywise power) =\t%.3f\n',                 mean(nht_effect_fw));
+    fprintf('Family-wise rejection rate across time points with null effect (familywise Type I error) =\t%.3f\n',     mean(nht_null_fw));
+    fprintf('Total miss rate (only null time points rejected) =\t%.3f\n',                                             mean(~nht_effect_fw & nht_null_fw));
+    fprintf('Familywise FDR (proportion of sig studies that include false positive time point) =\t%.3f\n',            sum(nht_null_fw)/sum(nht_effect_fw | nht_null_fw));
     
     %Report element-wise rejection rate within studies with significant
     %results
