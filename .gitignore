@@ -29,5 +29,6 @@ log.txt
 data/*
 results/*
 torque_output/*
+old/*
 
 ### File subsets in folder to ignore ###
