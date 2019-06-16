@@ -3,7 +3,7 @@
 Make figures for MUSim paper
 
 AUTHOR: Eric Fields
-VERSION DATE: 13 June 2019
+VERSION DATE: 15 June 2019
 """
 
 import os

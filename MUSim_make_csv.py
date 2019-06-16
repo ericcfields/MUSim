@@ -9,7 +9,7 @@
 Compile MUSim simulation results into more usable csv files
 
 Author: Eric Fields
-Version Date: 19 April 2019
+Version Date: 16 June 2019
 """
 
 import os
