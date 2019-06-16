@@ -109,6 +109,8 @@ def make_power_csvs(results_file):
     #Measure names and texts
     measures = {'FamilywisePower': 'Family-wise rejection rate across time points with effect (familywise power)',
                 'FamilywiseTypeI': 'Family-wise rejection rate across time points with null effect (familywise Type I error)',
+                'FamilywiseFDR': 'Familywise FDR (proportion of sig studies that include false positive time point)',
+                'TotalMissRate': 'Total miss rate (only null time points rejected)',
                 'Mean_EW_Power': 'Mean rejection rate at individual time points with effect (element-wise power)',
                 'Median_EW_Power': 'Median rejection rate at individual time points with effect (element-wise power)',
                 'Mean_EW_TypeI': 'Mean rejection rate at individual time points with null effect (element-wise Type I error)',
