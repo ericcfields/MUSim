@@ -116,7 +116,11 @@ def make_power_csvs(results_file):
                 'Mean_EW_TypeI': 'Mean rejection rate at individual time points with null effect (element-wise Type I error)',
                 'Median_EW_TypeI': 'Median rejection rate at individual time points with null effect (element-wise Type I error)',
                 'Mean_EW_FDR': 'Mean element-wise false discovery rate',
-                'Median_EW_FDR': 'Median element-wise false discovery rate'}
+                'Median_EW_FDR': 'Median element-wise false discovery rate',
+                'Mean_Onset': 'Mean onset time',
+                'Median_Onset': 'Median onset time',
+                'Mean_Offset': 'Mean offset time',
+                'Median_Offset': 'Median offset time'}
     
     #Produce csv for all measures
     for measure_name in measures:
