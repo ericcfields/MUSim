@@ -1,10 +1,10 @@
 effect,factor_levels,start_time,end_time,electrodes,include
 NonCon_N400_reduced.mat,2,300,500,"10, 14, 21, 22, 23",1
-NonCon_N400_reduced.mat,2,200,600,1:32,0
-NonCon_N400_reduced.mat,2,0,1000,1:32,0
-namesP300_reduced.mat,3,500,750,"10, 14, 21, 22, 23",0
-namesP300_reduced.mat,3,400,900,1:32,0
-namesP300_reduced.mat,3,0,1000,1:32,0
-simulated_focal_effect.mat,2,100,150,"10, 14, 21, 22, 23",0
-simulated_focal_effect.mat,2,0,300,1:32,0
-simulated_focal_effect.mat,2,0,1000,1:32,0
+NonCon_N400_reduced.mat,2,200,600,1:32,1
+NonCon_N400_reduced.mat,2,0,1000,1:32,1
+namesP300_reduced.mat,3,500,750,"10, 14, 21, 22, 23",1
+namesP300_reduced.mat,3,400,900,1:32,1
+namesP300_reduced.mat,3,0,1000,1:32,1
+simulated_focal_effect.mat,2,100,150,"10, 14, 21, 22, 23",1
+simulated_focal_effect.mat,2,0,300,1:32,1
+simulated_focal_effect.mat,2,0,1000,1:32,1

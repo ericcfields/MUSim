@@ -27,7 +27,7 @@ end
 noise = fullfile(main_dir, 'data', 'noise_trials.mat');
 
 %Simulated data parameters
-n_exp  = 1e2; %number of simulated experiments
+n_exp  = 1e4; %number of simulated experiments
 n_perm = 5e3; %permutations per experiment for Fmax and clust procedures
 n_subs = 24;  %number of subjects in each simulated experiment
 cond_trials = 20; %number of trials in each condition
@@ -40,7 +40,7 @@ sim_list = readtable(param_file);
 alpha = 0.05;
 
 %File for saving results
-text_output = false; %fullfile(main_dir, 'results', 'MUSim_power_results.txt');
+text_output = fullfile(main_dir, 'results', 'MUSim_power_results.txt');
 
 
 %% RUN SIMULATIONS
