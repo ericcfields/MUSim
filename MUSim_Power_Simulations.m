@@ -1,7 +1,7 @@
 %Run stats simulations with real EEG noise trials and effects
 %
 %Author: Eric Fields
-%Version Date: 12 April 2019
+%Version Date: 17 June 2019
 %
 %Copyright (c) 2019, Eric C. Fields
 %All rights reserved.
@@ -27,7 +27,7 @@ end
 noise = fullfile(main_dir, 'data', 'noise_trials.mat');
 
 %Simulated data parameters
-n_exp  = 1e4; %number of simulated experiments
+n_exp  = 1e2; %number of simulated experiments
 n_perm = 5e3; %permutations per experiment for Fmax and clust procedures
 n_subs = 24;  %number of subjects in each simulated experiment
 cond_trials = 20; %number of trials in each condition
@@ -40,7 +40,7 @@ sim_list = readtable(param_file);
 alpha = 0.05;
 
 %File for saving results
-output_file = fullfile(main_dir, 'results', 'MUSim_power_results.txt');
+text_output = false; %fullfile(main_dir, 'results', 'MUSim_power_results.txt');
 
 
 %% RUN SIMULATIONS
@@ -60,6 +60,9 @@ for s = 1:size(sim_list, 1)
     time_wind = [sim_list{s, 'start_time'}, sim_list{s, 'end_time'}];
     electrodes = eval(['[' sim_list{s, 'electrodes'}{1} ']']);
     
-    run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, 3, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, output_file)
+    [~, effect_name] = fileparts(effect);
+    mat_output = fullfile(main_dir, 'results', sprintf('%s_%d-%d_simulation_results.mat', effect_name, time_wind(1), time_wind(2)));
+    
+    run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, 3, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, text_output, mat_output)
     
 end

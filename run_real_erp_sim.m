@@ -2,14 +2,14 @@
 %with data constructed from real EEG noise trials and real ERP effects
 %
 %Author: Eric Fields
-%Version Date: 15 June 2019
+%Version Date: 17 June 2019
 %
 %Copyright (c) 2019, Eric C. Fields
 %All rights reserved.
 %This code is free and open source software made available under the 3-clause BSD license.
 %This software is provided "as is" and any express or implied warranties are disclaimed. 
 
-function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, dims, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, output_file)
+function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, dims, n_exp, n_perm, n_subs, cond_trials, error_mult, ind_var_factor, alpha, text_output, mat_output)
 
     
     %% ####################################################################
@@ -170,11 +170,14 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, d
     %################# SAVE AND REPORT RESULTS ############################
     %######################################################################
     
-    %Save results
+    %Save results to text file
     time_stamp = sprintf('%s_%s', datestr(datetime('now'),'ddmmmyy'), datestr(datetime('now'),'HHMM'));
-    if output_file
-        diary(output_file);
+    if text_output
+        diary(text_output);
     end
+    
+    %Save results to .mat file
+    simulation_results = struct;
     
     if strcmpi(effect, 'null')
         effect_description = '';
@@ -205,7 +208,8 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, d
     fprintf('\n');
     
     fprintf('\nMEAN WINDOW/REGION PARAMETRIC F-TEST RESULTS\n')
-    fprintf('Rejection rate =\t%.3f\n', mean(h_mean_amp));
+    simulation_results.mean_amp.rej_rate = mean(h_mean_amp);
+    fprintf('Rejection rate =\t%.3f\n', simulation_results.mean_amp.rej_rate);  
     
     %Find time points with effect
     effect_loc = false(1, end_sample-start_sample+1);
@@ -218,36 +222,112 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, d
     end
     
     fprintf('\nUNCORRECTED RESULTS\n');
-    summarize_results(effect_loc, h_uncorrected, noise_trials.times(start_sample:end_sample));
+    [fw_power, fw_TypeI, fw_total_miss, fw_FDR, ew_power, ew_TypeI, ew_FDR, onset_time, offset_time] = summarize_results(effect_loc, h_uncorrected, noise_trials.times(start_sample:end_sample));
+    simulation_results.uncorrected.fw_power = fw_power;
+    simulation_results.uncorrected.fw_TypeI = fw_TypeI;
+    simulation_results.uncorrected.fw_total_miss = fw_total_miss;
+    simulation_results.uncorrected.fw_FDR = fw_FDR;
+    simulation_results.uncorrected.ew_power = ew_power;
+    simulation_results.uncorrected.ew_TypeI = ew_TypeI;
+    simulation_results.uncorrected.ew_FDR = ew_FDR;
+    simulation_results.uncorrected.onset = onset_time;
+    simulation_results.uncorrected.offset = offset_time;
     
     fprintf('\nSIDAK RESULTS\n');
-    summarize_results(effect_loc, h_sidak, noise_trials.times(start_sample:end_sample));
+    [fw_power, fw_TypeI, fw_total_miss, fw_FDR, ew_power, ew_TypeI, ew_FDR, onset_time, offset_time] = summarize_results(effect_loc, h_sidak, noise_trials.times(start_sample:end_sample));
+    simulation_results.sidak.fw_power = fw_power;
+    simulation_results.sidak.fw_TypeI = fw_TypeI;
+    simulation_results.sidak.fw_total_miss = fw_total_miss;
+    simulation_results.sidak.fw_FDR = fw_FDR;
+    simulation_results.sidak.ew_power = ew_power;
+    simulation_results.sidak.ew_TypeI = ew_TypeI;
+    simulation_results.sidak.ew_FDR = ew_FDR;
+    simulation_results.sidak.onset = onset_time;
+    simulation_results.sidak.offset = offset_time;
     
     fprintf('\nFMAX RESULTS\n');
-    summarize_results(effect_loc, h_Fmax, noise_trials.times(start_sample:end_sample));
+    [fw_power, fw_TypeI, fw_total_miss, fw_FDR, ew_power, ew_TypeI, ew_FDR, onset_time, offset_time] = summarize_results(effect_loc, h_Fmax, noise_trials.times(start_sample:end_sample));
+    simulation_results.Fmax.fw_power = fw_power;
+    simulation_results.Fmax.fw_TypeI = fw_TypeI;
+    simulation_results.Fmax.fw_total_miss = fw_total_miss;
+    simulation_results.Fmax.fw_FDR = fw_FDR;
+    simulation_results.Fmax.ew_power = ew_power;
+    simulation_results.Fmax.ew_TypeI = ew_TypeI;
+    simulation_results.Fmax.ew_FDR = ew_FDR;
+    simulation_results.Fmax.onset = onset_time;
+    simulation_results.Fmax.offset = offset_time;
     
     fprintf('\nCLUSTER 0.05 RESULTS\n');
-    summarize_results(effect_loc, h_clust05, noise_trials.times(start_sample:end_sample));
+    [fw_power, fw_TypeI, fw_total_miss, fw_FDR, ew_power, ew_TypeI, ew_FDR, onset_time, offset_time] = summarize_results(effect_loc, h_clust05, noise_trials.times(start_sample:end_sample));
+    simulation_results.cluster05.fw_power = fw_power;
+    simulation_results.cluster05.fw_TypeI = fw_TypeI;
+    simulation_results.cluster05.fw_total_miss = fw_total_miss;
+    simulation_results.cluster05.fw_FDR = fw_FDR;
+    simulation_results.cluster05.ew_power = ew_power;
+    simulation_results.cluster05.ew_TypeI = ew_TypeI;
+    simulation_results.cluster05.ew_FDR = ew_FDR;
+    simulation_results.cluster05.onset = onset_time;
+    simulation_results.cluster05.offset = offset_time;
     
     fprintf('\nCLUSTER 0.01 RESULTS\n');
-    summarize_results(effect_loc, h_clust01, noise_trials.times(start_sample:end_sample));
+    [fw_power, fw_TypeI, fw_total_miss, fw_FDR, ew_power, ew_TypeI, ew_FDR, onset_time, offset_time] = summarize_results(effect_loc, h_clust01, noise_trials.times(start_sample:end_sample));
+    simulation_results.cluster01.fw_power = fw_power;
+    simulation_results.cluster01.fw_TypeI = fw_TypeI;
+    simulation_results.cluster01.fw_total_miss = fw_total_miss;
+    simulation_results.cluster01.fw_FDR = fw_FDR;
+    simulation_results.cluster01.ew_power = ew_power;
+    simulation_results.cluster01.ew_TypeI = ew_TypeI;
+    simulation_results.cluster01.ew_FDR = ew_FDR;
+    simulation_results.cluster01.onset = onset_time;
+    simulation_results.cluster01.offset = offset_time;
     
     fprintf('\nBH FDR RESULTS\n');
-    summarize_results(effect_loc, h_bh, noise_trials.times(start_sample:end_sample));
+    [fw_power, fw_TypeI, fw_total_miss, fw_FDR, ew_power, ew_TypeI, ew_FDR, onset_time, offset_time] = summarize_results(effect_loc, h_bh, noise_trials.times(start_sample:end_sample));
+    simulation_results.BH.fw_power = fw_power;
+    simulation_results.BH.fw_TypeI = fw_TypeI;
+    simulation_results.BH.fw_total_miss = fw_total_miss;
+    simulation_results.BH.fw_FDR = fw_FDR;
+    simulation_results.BH.ew_power = ew_power;
+    simulation_results.BH.ew_TypeI = ew_TypeI;
+    simulation_results.BH.ew_FDR = ew_FDR;
+    simulation_results.BH.onset = onset_time;
+    simulation_results.BH.offset = offset_time;
     
     fprintf('\nBY FDR RESULTS\n');
-    summarize_results(effect_loc, h_by, noise_trials.times(start_sample:end_sample));
+    [fw_power, fw_TypeI, fw_total_miss, fw_FDR, ew_power, ew_TypeI, ew_FDR, onset_time, offset_time] = summarize_results(effect_loc, h_by, noise_trials.times(start_sample:end_sample));
+    simulation_results.BY.fw_power = fw_power;
+    simulation_results.BY.fw_TypeI = fw_TypeI;
+    simulation_results.BY.fw_total_miss = fw_total_miss;
+    simulation_results.BY.fw_FDR = fw_FDR;
+    simulation_results.BY.ew_power = ew_power;
+    simulation_results.BY.ew_TypeI = ew_TypeI;
+    simulation_results.BY.ew_FDR = ew_FDR;
+    simulation_results.BY.onset = onset_time;
+    simulation_results.BY.offset = offset_time;
+    
     
     fprintf('\nBKY FDR RESULTS\n');
-    summarize_results(effect_loc, h_bky, noise_trials.times(start_sample:end_sample));
+    [fw_power, fw_TypeI, fw_total_miss, fw_FDR, ew_power, ew_TypeI, ew_FDR, onset_time, offset_time] = summarize_results(effect_loc, h_bky, noise_trials.times(start_sample:end_sample));
+    simulation_results.BKY.fw_power = fw_power;
+    simulation_results.BKY.fw_TypeI = fw_TypeI;
+    simulation_results.BKY.fw_total_miss = fw_total_miss;
+    simulation_results.BKY.fw_FDR = fw_FDR;
+    simulation_results.BKY.ew_power = ew_power;
+    simulation_results.BKY.ew_TypeI = ew_TypeI;
+    simulation_results.BKY.ew_FDR = ew_FDR;
+    simulation_results.BKY.onset = onset_time;
+    simulation_results.BKY.offset = offset_time;
     
     fprintf('\n----------------------------------------------------------------------------------\n\n')
     
     diary off
     
+    %Save results struct
+    save(mat_output, 'simulation_results');
+    
 end
 
-function summarize_results(effect_loc, nht, time_ids)
+function [fw_power, fw_TypeI, fw_total_miss, fw_FDR, ew_power, ew_TypeI, ew_FDR, onset_time, offset_time] = summarize_results(effect_loc, nht, time_ids)
 
     [n_perm, ~, n_time_pts] = size(nht);
 
@@ -268,23 +348,30 @@ function summarize_results(effect_loc, nht, time_ids)
     nht_null_sig   = nht_null(sig_studies, :);
     
     %Report family-wiise rejection rate
-    nht_effect_fw = any(nht_effect, 2);
-    nht_null_fw = any(nht_null, 2);
     fprintf('-- Family-wise rejection rates --\n');
-    fprintf('Family-wise rejection rate across time points with effect (familywise power) =\t%.3f\n',                 mean(nht_effect_fw));
-    fprintf('Family-wise rejection rate across time points with null effect (familywise Type I error) =\t%.3f\n',     mean(nht_null_fw));
-    fprintf('Total miss rate (only null time points rejected) =\t%.3f\n',                                             mean(~nht_effect_fw & nht_null_fw));
-    fprintf('Familywise FDR (proportion of sig studies that include false positive time point) =\t%.3f\n',            sum(nht_null_fw)/sum(nht_effect_fw | nht_null_fw));
+    nht_effect_fw = any(nht_effect, 2);
+    nht_null_fw   = any(nht_null, 2);
+    fw_power      = mean(nht_effect_fw);
+    fw_TypeI      = mean(nht_null_fw);
+    fw_total_miss = mean(~nht_effect_fw & nht_null_fw);
+    fw_FDR        = sum(nht_null_fw)/sum(nht_effect_fw | nht_null_fw);
+    fprintf('Family-wise rejection rate across time points with effect (familywise power) =\t%.3f\n', fw_power);
+    fprintf('Family-wise rejection rate across time points with null effect (familywise Type I error) =\t%.3f\n', fw_TypeI);
+    fprintf('Total miss rate (only null time points rejected) =\t%.3f\n', fw_total_miss);
+    fprintf('Familywise FDR (proportion of sig studies that include false positive time point) =\t%.3f\n', fw_FDR);
     
     %Report element-wise rejection rate within studies with significant
     %results
     fprintf('-- Element-wise rejection rates --\n');
-    fprintf('Mean rejection rate at individual time points with effect (element-wise power) =\t%.3f\n',               mean(mean(nht_effect_sig)));
-    fprintf('Median rejection rate at individual time points with effect (element-wise power) =\t%.3f\n',             median(mean(nht_effect_sig, 2)));
-    fprintf('Mean rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n',   mean(mean(nht_null_sig)));
-    fprintf('Median rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n', median(mean(nht_null_sig, 2)));
-    fprintf('Mean element-wise false discovery rate =\t%.3f\n',                                                       mean(sum(nht_null_sig, 2) ./ (sum(nht_null_sig, 2) + sum(nht_effect_sig, 2))));
-    fprintf('Median element-wise false discovery rate =\t%.3f\n',                                                     median(sum(nht_null_sig, 2) ./ (sum(nht_null_sig, 2) + sum(nht_effect_sig, 2))));
+    ew_power = mean(nht_effect_sig, 2);
+    ew_TypeI = mean(nht_null_sig, 2);
+    ew_FDR   = sum(nht_null_sig, 2) ./ (sum(nht_null_sig, 2) + sum(nht_effect_sig, 2));
+    fprintf('Mean rejection rate at individual time points with effect (element-wise power) =\t%.3f\n',               mean(ew_power));
+    fprintf('Median rejection rate at individual time points with effect (element-wise power) =\t%.3f\n',             median(ew_power));
+    fprintf('Mean rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n',   mean(ew_TypeI));
+    fprintf('Median rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n', median(ew_TypeI));
+    fprintf('Mean element-wise false discovery rate =\t%.3f\n',                                                       mean(ew_FDR));
+    fprintf('Median element-wise false discovery rate =\t%.3f\n',                                                     median(ew_FDR));
     
     %Get earliest and latest time points
     fprintf('-- Onset and Offset Times --\n');
