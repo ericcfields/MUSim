@@ -146,17 +146,6 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, d
         param_results = calc_param_ANOVA(mean_wind_data, [], (1:length(factor_levels > 1))+2, alpha);
         h_mean_amp(i) = param_results.h;
         
-        %Record updates to file
-        if i == 10
-            f_out = fopen('log.txt', 'a');
-            fprintf(f_out, 'Simulation %d %s\n', i, datestr(datetime('now')));
-            fclose(f_out);
-        elseif mod(i,1000) == 0
-            f_out = fopen('log.txt', 'a');
-            fprintf(f_out, 'Simulation %d %s\n', i, datestr(datetime('now')));
-            fclose(f_out);
-        end
-        
     end
     sim_time = toc;
     
