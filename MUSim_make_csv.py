@@ -9,7 +9,7 @@
 Compile MUSim simulation results into more usable csv files
 
 Author: Eric Fields
-Version Date: 16 June 2019
+Version Date: 20 June 2019
 """
 
 import os
@@ -110,17 +110,7 @@ def make_power_csvs(results_file):
     measures = {'FamilywisePower': 'Family-wise rejection rate across time points with effect (familywise power)',
                 'FamilywiseTypeI': 'Family-wise rejection rate across time points with null effect (familywise Type I error)',
                 'FamilywiseFDR': 'Familywise FDR (proportion of sig studies that include false positive time point)',
-                'TotalMissRate': 'Total miss rate (only null time points rejected)',
-                'Mean_EW_Power': 'Mean rejection rate at individual time points with effect (element-wise power)',
-                'Median_EW_Power': 'Median rejection rate at individual time points with effect (element-wise power)',
-                'Mean_EW_TypeI': 'Mean rejection rate at individual time points with null effect (element-wise Type I error)',
-                'Median_EW_TypeI': 'Median rejection rate at individual time points with null effect (element-wise Type I error)',
-                'Mean_EW_FDR': 'Mean element-wise false discovery rate',
-                'Median_EW_FDR': 'Median element-wise false discovery rate',
-                'Mean_Onset': 'Mean onset time',
-                'Median_Onset': 'Median onset time',
-                'Mean_Offset': 'Mean offset time',
-                'Median_Offset': 'Median offset time'}
+                'TotalMissRate': 'Total miss rate (only null time points rejected)'}
     
     #Produce csv for all measures
     for measure_name in measures:

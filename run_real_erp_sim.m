@@ -2,7 +2,7 @@
 %with data constructed from real EEG noise trials and real ERP effects
 %
 %Author: Eric Fields
-%Version Date: 17 June 2019
+%Version Date: 20 June 2019
 %
 %Copyright (c) 2019, Eric C. Fields
 %All rights reserved.
@@ -167,6 +167,14 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, d
     
     %Save results to .mat file
     simulation_results = struct;
+    simulation_results.effect = effect;
+    simulation_results.effect_description = effect_description;
+    simulation_results.time_window = time_wind;
+    simulation_results.electrodes = electrodes;
+    simulation_results.n_experiments = n_exp;
+    simulation_results.n_permutations = n_perm;
+    simulation_results.n_subjects = n_subs;
+    simulation_results.n_trials = cond_trials;
     
     if strcmpi(effect, 'null')
         effect_description = '';
@@ -318,13 +326,13 @@ end
 
 function [fw_power, fw_TypeI, fw_total_miss, fw_FDR, ew_power, ew_TypeI, ew_FDR, onset_time, offset_time] = summarize_results(effect_loc, nht, time_ids)
 
-    [n_perm, ~, n_time_pts] = size(nht);
+    [n_exp, ~, n_time_pts] = size(nht);
 
     %Get simulated experiments that found a significant result
     sig_studies = any(any(nht, 2), 3);
     
     %Collapse across electrodes
-    nht_t = reshape(any(nht, 2), [n_perm, n_time_pts]);
+    nht_t = reshape(any(nht, 2), [n_exp, n_time_pts]);
     
     %Get null hypothesis test at locations with and without real effect
     %separately
@@ -336,7 +344,7 @@ function [fw_power, fw_TypeI, fw_total_miss, fw_FDR, ew_power, ew_TypeI, ew_FDR,
     nht_effect_sig = nht_effect(sig_studies, :);
     nht_null_sig   = nht_null(sig_studies, :);
     
-    %Report family-wiise rejection rate
+    %Report family-wiise rejection rates
     fprintf('-- Family-wise rejection rates --\n');
     nht_effect_fw = any(nht_effect, 2);
     nht_null_fw   = any(nht_null, 2);
@@ -349,41 +357,54 @@ function [fw_power, fw_TypeI, fw_total_miss, fw_FDR, ew_power, ew_TypeI, ew_FDR,
     fprintf('Total miss rate (only null time points rejected) =\t%.3f\n', fw_total_miss);
     fprintf('Familywise FDR (proportion of sig studies that include false positive time point) =\t%.3f\n', fw_FDR);
     
-    %Report element-wise rejection rate within studies with significant
+    %Report element-wise rejection rates within studies with significant
     %results
     fprintf('-- Element-wise rejection rates --\n');
-    ew_power = mean(nht_effect_sig, 2);
-    ew_TypeI = mean(nht_null_sig, 2);
-    ew_FDR   = sum(nht_null_sig, 2) ./ (sum(nht_null_sig, 2) + sum(nht_effect_sig, 2));
-    fprintf('Mean rejection rate at individual time points with effect (element-wise power) =\t%.3f\n',               mean(ew_power));
-    fprintf('Median rejection rate at individual time points with effect (element-wise power) =\t%.3f\n',             median(ew_power));
-    fprintf('Mean rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n',   mean(ew_TypeI));
-    fprintf('Median rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n', median(ew_TypeI));
-    fprintf('Mean element-wise false discovery rate =\t%.3f\n',                                                       mean(ew_FDR));
-    fprintf('Median element-wise false discovery rate =\t%.3f\n',                                                     median(ew_FDR));
+    ew_power = NaN(n_exp, 1);
+    ew_power(sig_studies) = mean(nht_effect_sig, 2);
+    ew_TypeI = NaN(n_exp, 1);
+    ew_TypeI(sig_studies) = mean(nht_null_sig, 2);
+    ew_FDR = NaN(n_exp, 1);
+    ew_FDR(sig_studies)   = sum(nht_null_sig, 2) ./ (sum(nht_null_sig, 2) + sum(nht_effect_sig, 2));
+    fprintf('Mean rejection rate at individual time points with effect (element-wise power) =\t%.3f\n',               nanmean(ew_power));
+    fprintf('Median rejection rate at individual time points with effect (element-wise power) =\t%.3f\n',             nanmedian(ew_power));
+    fprintf('Mean rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n',   nanmean(ew_TypeI));
+    fprintf('Median rejection rate at individual time points with null effect (element-wise Type I error) =\t%.3f\n', nanmedian(ew_TypeI));
+    fprintf('Mean element-wise false discovery rate =\t%.3f\n',                                                       nanmean(ew_FDR));
+    fprintf('Median element-wise false discovery rate =\t%.3f\n',                                                     nanmedian(ew_FDR));
     
     %Get earliest and latest time points
     fprintf('-- Onset and Offset Times --\n');
     if any(sig_studies)
-        onset_time = NaN(sum(sig_studies), 1);
-        offset_time = NaN(sum(sig_studies), 1);
+        
+        sig_onset_time = NaN(sum(sig_studies), 1);
+        sig_offset_time = NaN(sum(sig_studies), 1);
         j = 0;
-        for i = 1:n_perm
+        for i = 1:n_exp
             if sig_studies(i)
                 j = j + 1;
-                onset_time(j) = find(nht_t(i, :), 1);
-                offset_time(j) = find(nht_t(i, :), 1, 'last');
+                sig_onset_time(j) = find(nht_t(i, :), 1);
+                sig_offset_time(j) = find(nht_t(i, :), 1, 'last');
             end
-        end       
-        fprintf('Mean onset time =\t%d\n', time_ids(round(mean(onset_time))));
-        fprintf('Median onset time =\t%d\n', time_ids(round(median(onset_time))));
-        fprintf('Mean offset time =\t%d\n', time_ids(round(mean(offset_time))));
-        fprintf('Median offset time =\t%d\n', time_ids(round(median(offset_time))));
+        end
+        
+        onset_time = NaN(n_exp, 1);
+        onset_time(sig_studies) = sig_onset_time;
+        offset_time = NaN(n_exp, 1);
+        offset_time(sig_studies) = sig_offset_time;
+        
+        fprintf('Mean onset time =\t%d\n', time_ids(round(nanmean(onset_time))));
+        fprintf('Median onset time =\t%d\n', time_ids(round(nanmedian(onset_time))));
+        fprintf('Mean offset time =\t%d\n', time_ids(round(nanmean(offset_time))));
+        fprintf('Median offset time =\t%d\n', time_ids(round(nanmedian(offset_time))));
+        
     else
+        
         fprintf('Mean onset time =\t%d\n', NaN);
         fprintf('Median onset time =\t%d\n', NaN);
         fprintf('Mean offset time =\t%d\n', NaN);
         fprintf('Median offset time =\t%d\n', NaN);
+        
     end
     
 end

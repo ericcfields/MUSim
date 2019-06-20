@@ -41,8 +41,8 @@ def make_bar(data, error_bars='se', mean_amp=True, legend=False):
         raise ValueError('Incorrect input for error_bars')
     
     #Plot
-    labels = ['Fmax', 'Cluster 0.05', 'Cluster 0.01', 'BH', 'BY', 'BKY']
-    colors = ['lightgreen', 'navy', 'blue', 'red', 'lightcoral', 'firebrick']
+    labels = ['Fmax', 'Cluster 0.05', 'Cluster 0.01', 'BH FDR', 'BY FDR', 'BKY FDR']
+    colors = ['lightgreen', 'navy', 'cornflowerblue', 'red', 'lightcoral', 'firebrick']
     if mean_amp:
         labels.insert(0, 'Mean Amplitude')
         colors.insert(0, 'black')
@@ -66,7 +66,7 @@ for results_file in results_files:
     #Load data
     data = pd.read_csv(join(results_dir, results_file))
     
-    if 'Power' in results_file:
+    if 'Power' in results_file and 'Familywise' in results_file:
         
         if 'FamilywisePower' in results_file:
             mean_amp = True
