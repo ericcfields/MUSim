@@ -30,5 +30,6 @@ data/*
 results/*
 torque_output/*
 old/*
+*__pycache__*
 
 ### File subsets in folder to ignore ###

@@ -1,9 +1,21 @@
 %Read simulation results in csv files
 %
 %Author: Eric Fields
-%Version Date: 20 June 2019
+%Version Date: 21 June 2019
 
 main_dir = MUSim_main_dir();
+
+%% Familywise measures
+%Run Python script creating Familywise measure csvs
+
+%Add location of Python script to Python path
+py_addpath(main_dir);
+
+%Run script
+py.MUSim_make_csv.main();
+
+
+%% Elementwise measurse
 
 results_mats = get_files(fullfile(main_dir, 'results'), 'simulation_results.mat');
 
@@ -11,7 +23,7 @@ components = {'namesP300_reduced', 'P300'; ...
               'NonCon_N400_reduced', 'N400'; ...
               'simulated_focal_effect', 'P1'};
 
-for i = 1
+for i = 1:length(results_mats)
     
     mat_file = results_mats{i};
     
@@ -23,6 +35,7 @@ for i = 1
     %Load simulation results
     load(fullfile(main_dir, 'results', mat_file));
     methods = fieldnames(simulation_results);
+    methods = methods(9:end);
     
     %Elementwise Power
     ew_power = table('Size', [1e4, length(methods)-1], ... 
@@ -30,7 +43,9 @@ for i = 1
                      'VariableNames', methods(2:end));
     for m = 2:length(methods)
         method = methods{m};
-        ew_power{1:length(simulation_results.(method).ew_power), methods{m}} = simulation_results.(method).ew_power;
+        ew_power{:, methods{m}} = simulation_results.(method).ew_power;
+        output_file = fullfile(main_dir, 'results', sprintf('MUSim_Power_EW_power_%s_%s.csv', effect_name, time_wind));
+        writetable(ew_power, output_file);
     end
     
 end
