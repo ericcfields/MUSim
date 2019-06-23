@@ -101,23 +101,34 @@ def make_null_figures():
 
 #%% Make EW figures
 
-ew_files = [file for file in os.listdir(results_dir) if file.endswith('0-1000.csv')]
+ew_files = [file for file in os.listdir(results_dir) if 'Power_EW' in file and file.endswith('.csv')]
 
-ew_file = ew_files[0]
-
-data = pd.read_csv(join(results_dir, ew_files[0]))
-
-#%%
-
-bplot = data.loc[:, 'Fmax':].boxplot(whis=[5, 95], showfliers=False, return_type='dict')
-
-for key in bplot.keys():
-    i = 0
-    for item in bplot[key]:
-        item.set_linewidth(4)
-        item.set_color(colors[int(i)])
-        if key in ['whiskers', 'caps']:
-            i += 0.5
-        else:
-            i += 1
-        
+for ew_file in ew_files:
+    
+    #Get data
+    data = pd.read_csv(join(results_dir, ew_file))
+    #Rename colums to labels to be used in figure
+    data.columns = ['uncorrected', 'Sidak', 'Fmax', 'Cluster 0.05', 'Cluster 0.01', 'BH FDR', 'BY FDR', 'BKY FDR']
+    
+    #Make box plot
+    bplot = data.loc[:, 'Fmax':].boxplot(whis=[5, 95], showfliers=False, 
+                                         return_type='dict', patch_artist=True,
+                                         fontsize=9)
+    #Update colors and line sizes
+    for key in bplot.keys():
+        i = 0
+        for item in bplot[key]:
+            item.set_linewidth(4)
+            if key == 'medians':
+                item.set_color('black')
+            else:
+                item.set_color(colors[int(i)])
+            if key in ['whiskers', 'caps']:
+                i += 0.5
+            else:
+                i += 1
+    
+    #Save figure
+    img_file = join(results_dir, ew_file[12:-4] + '.tif')
+    plt.savefig(img_file, bbox_inches='tight', dpi=600)
+    plt.close()

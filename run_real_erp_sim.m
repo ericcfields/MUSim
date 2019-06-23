@@ -2,7 +2,7 @@
 %with data constructed from real EEG noise trials and real ERP effects
 %
 %Author: Eric Fields
-%Version Date: 20 June 2019
+%Version Date: 23 June 2019
 %
 %Copyright (c) 2019, Eric C. Fields
 %All rights reserved.
@@ -320,7 +320,9 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, d
     diary off
     
     %Save results struct
-    save(mat_output, 'simulation_results');
+    if mat_output
+        save(mat_output, 'simulation_results');
+    end
     
 end
 
@@ -373,10 +375,11 @@ function [fw_power, fw_TypeI, fw_total_miss, fw_FDR, ew_power, ew_TypeI, ew_FDR,
     fprintf('Mean element-wise false discovery rate =\t%.3f\n',                                                       nanmean(ew_FDR));
     fprintf('Median element-wise false discovery rate =\t%.3f\n',                                                     nanmedian(ew_FDR));
     
-    %Get earliest and latest time points
+    %Onsets and offsets
     fprintf('-- Onset and Offset Times --\n');
     if any(sig_studies)
         
+        %Get earliest and latest significant time point
         sig_onset_time = NaN(sum(sig_studies), 1);
         sig_offset_time = NaN(sum(sig_studies), 1);
         j = 0;
@@ -388,15 +391,21 @@ function [fw_power, fw_TypeI, fw_total_miss, fw_FDR, ew_power, ew_TypeI, ew_FDR,
             end
         end
         
+        %Create onset times with NaN values for experiments with no sig
+        %effects
         onset_time = NaN(n_exp, 1);
         onset_time(sig_studies) = sig_onset_time;
         offset_time = NaN(n_exp, 1);
         offset_time(sig_studies) = sig_offset_time;
         
-        fprintf('Mean onset time =\t%d\n', time_ids(round(nanmean(onset_time))));
-        fprintf('Median onset time =\t%d\n', time_ids(round(nanmedian(onset_time))));
-        fprintf('Mean offset time =\t%d\n', time_ids(round(nanmean(offset_time))));
-        fprintf('Median offset time =\t%d\n', time_ids(round(nanmedian(offset_time))));
+        %Convert onset and offset from sample points to time points
+        onset_time(~isnan(onset_time)) = time_ids(onset_time(~isnan(onset_time)));
+        offset_time(~isnan(offset_time)) = time_ids(offset_time(~isnan(offset_time)));
+        
+        fprintf('Mean onset time =\t%.0f\n', nanmean(onset_time));
+        fprintf('Median onset time =\t%.0f\n', nanmedian(onset_time));
+        fprintf('Mean offset time =\t%.0f\n', nanmean(offset_time));
+        fprintf('Median offset time =\t%.0f\n', nanmedian(offset_time));
         
     else
         

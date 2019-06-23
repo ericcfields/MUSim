@@ -48,4 +48,48 @@ for i = 1:length(results_mats)
         writetable(ew_power, output_file);
     end
     
+    %Elementwise FDR
+    ew_FDR = table('Size', [1e4, length(methods)-1], ... 
+                     'VariableTypes', repmat({'doublenan'}, [1, length(methods)-1]), ...
+                     'VariableNames', methods(2:end));
+    for m = 2:length(methods)
+        method = methods{m};
+        ew_FDR{:, methods{m}} = simulation_results.(method).ew_FDR;
+        output_file = fullfile(main_dir, 'results', sprintf('MUSim_Power_EW_FDR_%s_%s.csv', effect_name, time_wind));
+        writetable(ew_FDR, output_file);
+    end
+    
+    %Elementwise Type I
+    ew_TypeI = table('Size', [1e4, length(methods)-1], ... 
+                     'VariableTypes', repmat({'doublenan'}, [1, length(methods)-1]), ...
+                     'VariableNames', methods(2:end));
+    for m = 2:length(methods)
+        method = methods{m};
+        ew_TypeI{:, methods{m}} = simulation_results.(method).ew_TypeI;
+        output_file = fullfile(main_dir, 'results', sprintf('MUSim_Power_EW_TypeI_%s_%s.csv', effect_name, time_wind));
+        writetable(ew_TypeI, output_file);
+    end
+    
+    %Onset
+    onset = table('Size', [1e4, length(methods)-1], ... 
+                     'VariableTypes', repmat({'doublenan'}, [1, length(methods)-1]), ...
+                     'VariableNames', methods(2:end));
+    for m = 2:length(methods)
+        method = methods{m};
+        onset{:, methods{m}} = simulation_results.(method).onset;
+        output_file = fullfile(main_dir, 'results', sprintf('MUSim_Power_EW_onset_%s_%s.csv', effect_name, time_wind));
+        writetable(onset, output_file);
+    end
+    
+    %Offset
+    offset = table('Size', [1e4, length(methods)-1], ... 
+                     'VariableTypes', repmat({'doublenan'}, [1, length(methods)-1]), ...
+                     'VariableNames', methods(2:end));
+    for m = 2:length(methods)
+        method = methods{m};
+        offset{:, methods{m}} = simulation_results.(method).offset;
+        output_file = fullfile(main_dir, 'results', sprintf('MUSim_Power_EW_offset_%s_%s.csv', effect_name, time_wind));
+        writetable(offset, output_file);
+    end
+    
 end
