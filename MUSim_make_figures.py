@@ -3,7 +3,7 @@
 Make figures for MUSim paper
 
 AUTHOR: Eric Fields
-VERSION DATE: 15 June 2019
+VERSION DATE: 24 June 2019
 """
 
 import os
@@ -13,9 +13,7 @@ import pandas as pd
 from statsmodels.stats.proportion import proportion_confint
 import matplotlib.pyplot as plt
 
-results_dir = r'C:\Users\ecfne\Documents\Eric\Research\Stats Simulations\MUSim\results'
 
-colors = ['lightgreen', 'navy', 'cornflowerblue', 'red', 'lightcoral', 'firebrick']
 
 def binom_ci_precision(proportion, nobs, method='beta', alpha=0.05):
     """
@@ -26,7 +24,9 @@ def binom_ci_precision(proportion, nobs, method='beta', alpha=0.05):
     ci_precision = ci[1] - proportion
     return ci_precision
 
-def make_bar(data, error_bars='se', mean_amp=True, legend=False):
+def make_bar(data, colors, error_bars='se', mean_amp=True, legend=False):
+    
+    use_colors = colors.copy()
     
     use_cols = ['Fmax', 'cluster_05', 'cluster_01', 'BH', 'BY', 'BKY']
     if mean_amp:
@@ -47,16 +47,17 @@ def make_bar(data, error_bars='se', mean_amp=True, legend=False):
     labels = ['Fmax', 'Cluster 0.05', 'Cluster 0.01', 'BH FDR', 'BY FDR', 'BKY FDR']
     if mean_amp:
         labels.insert(0, 'Mean Amplitude')
-        colors.insert(0, 'black')
-    data.plot.bar(x='time_window', y=use_cols, label=labels, color=colors,
-                  fontsize=12, yerr=stderr, legend=legend)
+        use_colors.insert(0, 'black')
+    data.plot.bar(x='time_window', y=use_cols, label=labels, color=use_colors,
+                  fontsize=16, yerr=stderr, legend=legend)
     plt.xticks(rotation='horizontal')
     plt.xlabel('')
+    plt.ylim((0,1))
     if legend:
         plt.legend(loc=(1.04,0), prop={'size': 12})
     
 
-def make_power_figures():
+def make_power_figures(colors, results_dir):
     
     #Get all results csv files
     results_files = [file for file in os.listdir(results_dir) if file.endswith('.csv')]
@@ -75,23 +76,23 @@ def make_power_figures():
         
             #Make file with legend
             if not os.path.isfile(join(results_dir, 'legend.tif')):
-                make_bar(data[0:3], legend=True)
+                make_bar(data[0:3], colors, legend=True)
                 img_file = join(results_dir, 'legend.tif')
                 plt.savefig(img_file, bbox_inches='tight', dpi=600)
                 plt.close()
                 
             #Make figures
-            make_bar(data[0:3], error_bars='CI', mean_amp=mean_amp)
+            make_bar(data[0:3], colors, error_bars='CI', mean_amp=mean_amp)
             img_file = join(results_dir, '%s_N400.tif' % results_file.strip('.csv'))
             plt.savefig(img_file, bbox_inches='tight', dpi=600)
             plt.close()
             
-            make_bar(data[3:6], error_bars='CI', mean_amp=mean_amp) 
+            make_bar(data[3:6], colors, error_bars='CI', mean_amp=mean_amp) 
             img_file = join(results_dir, '%s_P300.tif' % results_file.strip('.csv'))
             plt.savefig(img_file, bbox_inches='tight', dpi=600)
             plt.close()
             
-            make_bar(data[6:9], error_bars='CI', mean_amp=mean_amp)
+            make_bar(data[6:9], colors, error_bars='CI', mean_amp=mean_amp)
             img_file = join(results_dir, '%s_P1.tif' % results_file.strip('.csv'))
             plt.savefig(img_file, bbox_inches='tight', dpi=600)
             plt.close()
@@ -99,36 +100,55 @@ def make_power_figures():
 def make_null_figures():
     pass
 
-#%% Make EW figures
+def make_EW_figures(colors, results_dir):
 
-ew_files = [file for file in os.listdir(results_dir) if 'Power_EW' in file and file.endswith('.csv')]
+    ew_files = [file for file in os.listdir(results_dir) if 'Power_EW' in file and file.endswith('.csv')]
+    
+    for ew_file in ew_files:
+        
+        #Get data
+        data = pd.read_csv(join(results_dir, ew_file))
+        #Rename colums to labels to be used in figure
+        data.columns = ['uncorrected', 'Sidak', 'Fmax', 'Clust0.05', 'Clust0.01', 'BH FDR', 'BY FDR', 'BKY FDR']
+        
+        #Make box plot
+        bplot = data.loc[:, 'Fmax':].boxplot(whis=[5, 95], showfliers=False, 
+                                             return_type='dict', patch_artist=True,
+                                             fontsize=12)
+        
+        #For proporition measures, set standard y-scale
+        if 'onset' not in ew_file and 'offset' not in ew_file:
+            plt.ylim((0,1))
+        
+        #Update colors and line sizes
+        for key in bplot.keys():
+            i = 0
+            for item in bplot[key]:
+                item.set_linewidth(4)
+                if key == 'medians':
+                    item.set_color('black')
+                else:
+                    item.set_color(colors[int(i)])
+                if key in ['whiskers', 'caps']:
+                    i += 0.5
+                else:
+                    i += 1
+        
+        #Save figure
+        img_file = join(results_dir, ew_file.strip('.csv') + '.tif')
+        plt.savefig(img_file, bbox_inches='tight', dpi=600)
+        plt.close()
+        
+def main():
+    
+    results_dir = r'C:\Users\ecfne\Documents\Eric\Research\Stats Simulations\MUSim\results'
 
-for ew_file in ew_files:
+    colors = ['lightgreen', 'navy', 'cornflowerblue', 'red', 'lightcoral', 'firebrick']
     
-    #Get data
-    data = pd.read_csv(join(results_dir, ew_file))
-    #Rename colums to labels to be used in figure
-    data.columns = ['uncorrected', 'Sidak', 'Fmax', 'Cluster 0.05', 'Cluster 0.01', 'BH FDR', 'BY FDR', 'BKY FDR']
+    make_power_figures(colors, results_dir)
     
-    #Make box plot
-    bplot = data.loc[:, 'Fmax':].boxplot(whis=[5, 95], showfliers=False, 
-                                         return_type='dict', patch_artist=True,
-                                         fontsize=9)
-    #Update colors and line sizes
-    for key in bplot.keys():
-        i = 0
-        for item in bplot[key]:
-            item.set_linewidth(4)
-            if key == 'medians':
-                item.set_color('black')
-            else:
-                item.set_color(colors[int(i)])
-            if key in ['whiskers', 'caps']:
-                i += 0.5
-            else:
-                i += 1
+    make_EW_figures(colors, results_dir)
     
-    #Save figure
-    img_file = join(results_dir, ew_file[12:-4] + '.tif')
-    plt.savefig(img_file, bbox_inches='tight', dpi=600)
-    plt.close()
+if __name__ == '__main__':
+    main()
+    
