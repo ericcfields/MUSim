@@ -3,7 +3,7 @@
 Make figures for MUSim paper
 
 AUTHOR: Eric Fields
-VERSION DATE: 24 June 2019
+VERSION DATE: 26 June 2019
 """
 
 import os
@@ -12,7 +12,6 @@ import numpy as np
 import pandas as pd
 from statsmodels.stats.proportion import proportion_confint
 import matplotlib.pyplot as plt
-
 
 
 def binom_ci_precision(proportion, nobs, method='beta', alpha=0.05):
@@ -24,7 +23,7 @@ def binom_ci_precision(proportion, nobs, method='beta', alpha=0.05):
     ci_precision = ci[1] - proportion
     return ci_precision
 
-def make_bar(data, colors, error_bars='se', mean_amp=True, legend=False):
+def make_power_bar(data, colors, error_bars='se', mean_amp=True, legend=False):
     
     use_colors = colors.copy()
     
@@ -44,9 +43,11 @@ def make_bar(data, colors, error_bars='se', mean_amp=True, legend=False):
         raise ValueError('Incorrect input for error_bars')
     
     #Plot
-    labels = ['Fmax', 'Cluster 0.05', 'Cluster 0.01', 'BH FDR', 'BY FDR', 'BKY FDR']
+    labels = ['Fmax', 'cluster (p≤0.05 threshold)', 'cluster (p≤0.05 threshold)', 
+              'FDR (Benjamini & Hochberg, 1995)', 'FDR (Benjamini & Yekutieli, 2001)', 
+              'FDR (Benjamini et al., 2006)']
     if mean_amp:
-        labels.insert(0, 'Mean Amplitude')
+        labels.insert(0, 'mean amplitude')
         use_colors.insert(0, 'black')
     data.plot.bar(x='time_window', y=use_cols, label=labels, color=use_colors,
                   fontsize=16, yerr=stderr, legend=legend)
@@ -76,30 +77,59 @@ def make_power_figures(colors, results_dir):
         
             #Make file with legend
             if not os.path.isfile(join(results_dir, 'legend.tif')):
-                make_bar(data[0:3], colors, legend=True)
+                make_power_bar(data[0:3], colors, legend=True)
                 img_file = join(results_dir, 'legend.tif')
                 plt.savefig(img_file, bbox_inches='tight', dpi=600)
                 plt.close()
                 
             #Make figures
-            make_bar(data[0:3], colors, error_bars='CI', mean_amp=mean_amp)
+            make_power_bar(data[0:3], colors, error_bars='CI', mean_amp=mean_amp)
             img_file = join(results_dir, '%s_N400.tif' % results_file.strip('.csv'))
             plt.savefig(img_file, bbox_inches='tight', dpi=600)
             plt.close()
             
-            make_bar(data[3:6], colors, error_bars='CI', mean_amp=mean_amp) 
+            make_power_bar(data[3:6], colors, error_bars='CI', mean_amp=mean_amp) 
             img_file = join(results_dir, '%s_P300.tif' % results_file.strip('.csv'))
             plt.savefig(img_file, bbox_inches='tight', dpi=600)
             plt.close()
             
-            make_bar(data[6:9], colors, error_bars='CI', mean_amp=mean_amp)
+            make_power_bar(data[6:9], colors, error_bars='CI', mean_amp=mean_amp)
             img_file = join(results_dir, '%s_P1.tif' % results_file.strip('.csv'))
             plt.savefig(img_file, bbox_inches='tight', dpi=600)
             plt.close()
             
-def make_null_figures():
-    pass
+def make_null_figures(results_dir):
 
+    #Get data
+    data = pd.read_csv(join(results_dir, 'MUSim_Null_FamilywiseTypeI.csv'))
+    data[['n_trials', 'n_subjects']] = data[['n_trials', 'n_subjects']].astype(int)
+    
+    #Plotting parameters
+    use_cols = ['mean_amp', 'Fmax', 'cluster_05', 'cluster_01']
+    labels = ['mean amplitude', 'Fmax', 'cluster (p ≤ 0.05 threshold)', 'cluster (p ≤ 0.01 threshold)']
+    use_colors = ['black', 'lightgreen', 'navy', 'cornflowerblue']
+    
+    for time_wind in ('0 - 300', '300 - 1000'):
+        for trials in (40, 20, 10):
+            plot_subset = data[(data['time_window'] == time_wind) & (data['n_trials'] == trials)]
+            proportions = plot_subset.loc[:, use_cols].to_numpy().T
+            stderr = binom_ci_precision(proportions, 10000)
+            
+            #Make bar graph
+            plot_subset.plot.bar(x='n_subjects', y=use_cols, label=labels, color=use_colors,
+                          fontsize=16, yerr=stderr, legend=False)
+            plt.xticks(rotation='horizontal')
+            plt.xlabel('')
+            plt.ylim((0,0.1))
+            plt.axhline(y=0.05,linewidth=1, color='r', linestyle='--')
+            plt.yticks(np.arange(1,11)/100)
+            plt.xlabel('Number of Subjects', fontsize=18)
+            
+            #Save file
+            img_file = join(results_dir, 'MUSim_Null_FamilywiseTypeI_%s_%dtrials.tif' % (time_wind, trials))
+            plt.savefig(img_file, bbox_inches='tight', dpi=600)
+            plt.close()
+            
 def make_EW_figures(colors, results_dir):
 
     ew_files = [file for file in os.listdir(results_dir) if 'Power_EW' in file and file.endswith('.csv')]
@@ -147,8 +177,9 @@ def main():
     
     make_power_figures(colors, results_dir)
     
-    make_EW_figures(colors, results_dir)
+    make_null_figures(results_dir)
     
+    make_EW_figures(colors, results_dir)
+
 if __name__ == '__main__':
     main()
-    
