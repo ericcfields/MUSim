@@ -2,7 +2,7 @@
 %with data constructed from real EEG noise trials and real ERP effects
 %
 %Author: Eric Fields
-%Version Date: 23 June 2019
+%Version Date: 2 July 2019
 %
 %Copyright (c) 2019, Eric C. Fields
 %All rights reserved.
@@ -165,6 +165,10 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, d
         diary(text_output);
     end
     
+    if strcmpi(effect, 'null')
+        effect_description = '';
+    end
+    
     %Save results to .mat file
     simulation_results = struct;
     simulation_results.effect = effect;
@@ -175,10 +179,6 @@ function run_real_erp_sim(noise, effect, time_wind, electrodes, factor_levels, d
     simulation_results.n_permutations = n_perm;
     simulation_results.n_subjects = n_subs;
     simulation_results.n_trials = cond_trials;
-    
-    if strcmpi(effect, 'null')
-        effect_description = '';
-    end
     
     %Print output
     fprintf('\n');
