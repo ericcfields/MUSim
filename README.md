@@ -11,5 +11,7 @@ Code to conduct simulation studies examining power and Type I error rate for var
 Simulations are conducted using the Factorial Mass Univariate Toolbox:  
 https://github.com/ericcfields/FMUT/wiki
 
-A a preprint describing an earlier version of this work can be found at:  
-https://psyarxiv.com/qfkgc/
+The result of this work is now in press at the journal *Psychophysiology*.  
+Preprint: https://psyarxiv.com/qfkgc/  
+OSF: https://osf.io/mktqj/
+
