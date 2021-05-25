@@ -12,8 +12,7 @@ Simulations are conducted using the Factorial Mass Univariate Toolbox:
 https://github.com/ericcfields/FMUT/wiki
 
 The result of this work has been accepted for publication:  
-Fields, E. C., & Kuperberg, G. R. (in press). Having your cake and eating it too: Flexibility and power with mass univariate statistics for ERP data. *Psychophysiology*, e13468. https://doi.org/10.1111/psyp.13468  
+Fields, E. C., & Kuperberg, G. R. (2020). Having your cake and eating it too: Flexibility and power with mass univariate statistics for ERP data. Psychophysiology, 57(2), e13468. https://doi.org/10.1111/psyp.13468 
 
 Results and materials can be found on the OSF page:  
 https://osf.io/mktqj/
-
